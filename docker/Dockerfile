@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir pygame pyinstaller
 
 # Build the game binary
 RUN pyinstaller --noconfirm --onedir --windowed \
-    --add-data "$GAME_NAME/assets:$GAME_NAME/assets" \
+    --add-data "$GAME_NAME/assets:$GAME_NAME/_internal/assets" \
     --name $GAME_NAME $GAME_NAME/main.py \
  && chmod +x dist/$GAME_NAME/$GAME_NAME
 

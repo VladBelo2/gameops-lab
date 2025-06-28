@@ -1,0 +1,55 @@
+name: 🐳 Docker CI for GameOps Lab
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
+
+    env:
+      IMAGE_NAME: vladbelo2/${{ matrix.game }}
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Build Docker image
+        run: |
+          docker build \
+            -t $IMAGE_NAME:ci \
+            -f docker/Dockerfile \
+            --build-arg GAME_NAME=${{ matrix.game }} .
+
+      - name: 🚀 Run Headless Test
+        run: |
+          docker run --rm \
+            -e HEADLESS_TEST=1 \
+            $IMAGE_NAME:ci
+
+      - name: 📦 Extract dist folder
+        run: |
+          CID=$(docker create $IMAGE_NAME:ci)
+          docker cp "$CID:/app/dist/${{ matrix.game }}" "./${{ matrix.game }}-dist"
+          docker rm "$CID"
+
+      - name: 💾 Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.game }}-binary
+          path: ${{ matrix.game }}-dist/
+
+      - name: 🔐 Login to Docker Hub
+        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: ☁️ Push to Docker Hub
+        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+        run: |
+          docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest

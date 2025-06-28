@@ -1,0 +1,8 @@
+{
+  "app_name": "snake",
+  "entry_file": "main.py",
+  "assets_dir": "assets",
+  "venv_dir": ".venv",
+  "hidden_imports": [],
+  "windowed": true
+}

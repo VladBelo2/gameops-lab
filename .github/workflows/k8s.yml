@@ -1,0 +1,33 @@
+name: ⚡ Kubernetes Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [snake, tetris, brick_breaker]
+
+    steps:
+      - name: 📂 Checkout
+        uses: actions/checkout@v3
+
+      - name: 🐳 Set up Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBECONFIG_CONTENT" > ~/.kube/config
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+
+      - name: 🌁 Apply K8s Manifests for ${{ matrix.game }}
+        run: |
+          kubectl apply -f kubernetes/deployments/${{ matrix.game }}-deployment.yaml
+          kubectl apply -f kubernetes/services/${{ matrix.game }}-service.yaml
+          kubectl apply -f kubernetes/ingress/${{ matrix.game }}-ingress.yaml
+
+      - name: 🔍 Verify Deployment
+        run: |
+          kubectl rollout status deployment/${{ matrix.game }}-deployment
+          kubectl get ingress

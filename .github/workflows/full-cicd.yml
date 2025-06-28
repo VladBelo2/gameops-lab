@@ -1,0 +1,68 @@
+name: 🌟 Full CI/CD Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [snake, tetris, brick_breaker]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: bash scripts/build_local_venv.sh ${{ matrix.game }}
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [snake, tetris, brick_breaker]
+    steps:
+      - uses: actions/checkout@v3
+      - run: pip install pytest
+      - run: pytest games/${{ matrix.game }}/tests
+
+  dockerize:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [snake, tetris, brick_breaker]
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker build -t ghcr.io/yourname/${{ matrix.game }}:latest -f games/${{ matrix.game }}/Dockerfile .
+      - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - run: docker push ghcr.io/yourname/${{ matrix.game }}:latest
+
+  deploy:
+    needs: dockerize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "$KUBECONFIG_CONTENT" > ~/.kube/config
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+      - run: kubectl apply -f kubernetes/ --recursive
+
+  post-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - run: kubectl get pods -o wide
+      - run: kubectl get ingress
+      - run: curl --fail http://snake.gameops.local || exit 1
+
+  notify:
+    if: always()
+    needs: [build, test, deploy, post-check]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "✅ CI/CD completed for GameOps Lab!"

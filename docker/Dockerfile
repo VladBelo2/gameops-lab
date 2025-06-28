@@ -22,8 +22,7 @@ ARG GAME_NAME
 ENV GAME_NAME=$GAME_NAME
 
 # Create game directory and copy all project files
-RUN mkdir $GAME_NAME
-COPY . ./$GAME_NAME
+COPY games/$GAME_NAME /app/$GAME_NAME
 
 # Install dependencies
 RUN pip install --no-cache-dir pygame pyinstaller

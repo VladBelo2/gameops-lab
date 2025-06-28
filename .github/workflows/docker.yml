@@ -19,12 +19,13 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🐳 Build Docker image
+      - name: 🐳 Build Docker Image
         run: |
           docker build \
             -t $IMAGE_NAME:ci \
             -f docker/Dockerfile \
-            --build-arg GAME_NAME=${{ matrix.game }} .
+            --build-arg GAME_NAME=${{ matrix.game }} \
+            docker/
 
       - name: 🚀 Run Headless Test
         run: |

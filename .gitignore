@@ -17,6 +17,7 @@ __pycache__/
 *.box
 .venv/
 .pytest_cache/
+.cache/
 
 # Logs
 *.log
@@ -28,26 +29,18 @@ selective_exporter.py
 *.key
 secrets/*
 
-<<<<<<< HEAD
-# PyInstaller builds
-=======
+
 # PyInstaller build artifacts
->>>>>>> dev
 build/
 dist/
 *.spec
-
-<<<<<<< HEAD
-# Test caches
-.pytest_cache/
-.cache/
 
 # CI-only output
 *.zip
 *.dmg
 *.exe
 *.AppImage
-=======
+
 # Game-specific
 games/brick_breaker/build/
 games/brick_breaker/dist/
@@ -58,4 +51,3 @@ games/snake/.venv/
 games/tetris/build/
 games/tetris/dist/
 games/tetris/.venv/
->>>>>>> dev

@@ -21,8 +21,7 @@ jobs:
 
       - name: 🧹 Prepare Docker build context
         run: |
-          rm -rf ${{ matrix.game }}
-          cp -r games/${{ matrix.game }} ./${{ matrix.game }}
+          cp -r games/${{ matrix.game }} docker/${{ matrix.game }}
 
       - name: 🐳 Build Docker Image
         run: |

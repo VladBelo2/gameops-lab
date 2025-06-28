@@ -9,7 +9,7 @@ __pycache__/
 *.pyd
 .env
 *.py[cod]
-.venv/
+.venv
 *.egg-info/
 
 # Vagrant

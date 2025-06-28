@@ -12,6 +12,8 @@ __pycache__/
 # Vagrant
 .vagrant/
 *.box
+.venv/
+.pytest_cache/
 
 # Logs
 *.log
@@ -26,3 +28,19 @@ ngrok.token
 dashboard-token.txt
 dashboard_token.txtngrok.token
 secrets/*
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Game-specific
+games/brick_breaker/build/
+games/brick_breaker/dist/
+games/brick_breaker/.venv/
+games/snake/build/
+games/snake/dist/
+games/snake/.venv/
+games/tetris/build/
+games/tetris/dist/
+games/tetris/.venv/

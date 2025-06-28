@@ -1,0 +1,8 @@
+# Ignore dev artifacts from being copied to Docker context
+build/
+dist/
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.log

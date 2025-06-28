@@ -2,12 +2,15 @@
 .DS_Store
 Thumbs.db
 
-# Python
+# Python + Pygame
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .env
+*.py[cod]
+.venv/
+*.egg-info/
 
 # Vagrant
 .vagrant/
@@ -21,8 +24,19 @@ selective_exporter.py
 # Secrets
 *.pem
 *.key
-.env
-ngrok.token
-dashboard-token.txt
-dashboard_token.txtngrok.token
 secrets/*
+
+# PyInstaller builds
+build/
+dist/
+*.spec
+
+# Test caches
+.pytest_cache/
+.cache/
+
+# CI-only output
+*.zip
+*.dmg
+*.exe
+*.AppImage

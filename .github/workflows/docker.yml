@@ -19,6 +19,11 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
+      - name: 🧹 Prepare Docker build context
+        run: |
+          rm -rf ${{ matrix.game }}
+          cp -r games/${{ matrix.game }} ./${{ matrix.game }}
+
       - name: 🐳 Build Docker Image
         run: |
           docker build \

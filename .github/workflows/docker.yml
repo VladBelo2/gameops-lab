@@ -48,6 +48,7 @@ jobs:
           pip install pyinstaller pygame
 
       - name: 💡 Build Binary
+        if: matrix.os != 'windows-latest'
         run: |
           cd games/${{ matrix.game }}
           pyinstaller --noconfirm --onefile --windowed \
@@ -57,31 +58,24 @@ jobs:
       - name: 🪐 Package as AppImage (Linux only)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt update && sudo apt install -y fuse libfuse2
-          if ! command -v appimagetool &> /dev/null; then
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-            chmod +x appimagetool
-            sudo mv appimagetool /usr/local/bin/appimagetool
-          fi
-
-          pip install --upgrade pip
-          pip install pyinstaller pygame
-          
+          sudo apt-get update
+          sudo apt-get install -y appimagetool
           cd games/${{ matrix.game }}
           mkdir -p AppDir/usr/bin
           cp dist/${{ matrix.game }} AppDir/usr/bin/
           chmod +x AppDir/usr/bin/${{ matrix.game }}
 
           # Desktop entry
-          printf "[Desktop Entry]\nName=%s\nExec=%s\nIcon=%s\nType=Application\nCategories=Game\n" \
-            "${{ matrix.game }}" "${{ matrix.game }}" "${{ matrix.game }}" \
-            > AppDir/${{ matrix.game }}.desktop
+          echo "[Desktop Entry]" > AppDir/${{ matrix.game }}.desktop
+          echo "Name=${{ matrix.game }}" >> AppDir/${{ matrix.game }}.desktop
+          echo "Exec=${{ matrix.game }}" >> AppDir/${{ matrix.game }}.desktop
+          echo "Icon=${{ matrix.game }}" >> AppDir/${{ matrix.game }}.desktop
+          echo "Type=Application" >> AppDir/${{ matrix.game }}.desktop
+          echo "Categories=Game;" >> AppDir/${{ matrix.game }}.desktop
 
-          # Icon fallback (use generic one if missing)
+          # Icon fallback
           if [ ! -f assets/icon.png ]; then
-            echo "🔹 No icon.png found, using default fallback."
-            mkdir -p AppDir
-            cp ../../assets/default-icon.png AppDir/${{ matrix.game }}.png
+            echo "🔹 No icon.png found, skipping icon setup."
           else
             cp assets/icon.png AppDir/${{ matrix.game }}.png
           fi
@@ -95,39 +89,49 @@ jobs:
           name: ${{ matrix.game }}-linux-AppImage
           path: games/${{ matrix.game }}/${{ matrix.game }}.AppImage
 
-      - name: 📄 Upload macOS .app Artifact
+      - name: 📦 Install py2app (macOS only)
         if: matrix.os == 'macos-latest'
         run: |
-            cd games/${{ matrix.game }}
-            cat <<EOF > setup.py
-            from setuptools import setup
-            APP = ['main.py']
-            DATA_FILES = [('assets', ['assets/DejaVuSans.ttf'])]
-            OPTIONS = {'argv_emulation': True, 'packages': ['pygame']}
-            setup(app=APP, data_files=DATA_FILES, options={'py2app': OPTIONS})
-            EOF
+          pip install py2app
 
-            python3 setup.py py2app
+      - name: 📥 Copy setup.py template
+        if: matrix.os == 'macos-latest'
+        run: |
+            cp scripts/py2app_setup_template.py games/${{ matrix.game }}/setup.py
 
-      - name: 📄 Upload macOS Artifact
+      - name: 🍎 Build macOS .app
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd games/${{ matrix.game }}
+          python3 setup.py py2app
+
+      - name: 📄 Upload macOS .app Artifact
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.game }}-macOS-app
           path: games/${{ matrix.game }}/dist/${{ matrix.game }}.app
 
-      - name: 🚀 Build Windows Installer
+      - name: 🪟 Build Windows Executable
         if: matrix.os == 'windows-latest'
         run: |
-            echo "Outfile \"${{ matrix.game }}-setup.exe\"" > installer.nsi
-            echo "InstallDir \"$PROGRAMFILES\\${{ matrix.game }}\"" >> installer.nsi
-            echo "Page Directory" >> installer.nsi
-            echo "Page InstFiles" >> installer.nsi
-            echo "Section" >> installer.nsi
-            echo "  SetOutPath \"$INSTDIR\"" >> installer.nsi
-            echo "  File \"dist\\${{ matrix.game }}.exe\"" >> installer.nsi
-            echo "SectionEnd" >> installer.nsi
-            makensis installer.nsi
+          pip install pyinstaller pygame
+          cd games/${{ matrix.game }}
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name ${{ matrix.game }} main.py
+
+      - name: 🚀 Create Windows Installer
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd games/${{ matrix.game }}
+          echo 'Outfile "${{ matrix.game }}-setup.exe"' > installer.nsi
+          echo 'InstallDir "$PROGRAMFILES\\${{ matrix.game }}"' >> installer.nsi
+          echo 'Page Directory' >> installer.nsi
+          echo 'Page InstFiles' >> installer.nsi
+          echo 'Section' >> installer.nsi
+          echo '  SetOutPath "$INSTDIR"' >> installer.nsi
+          echo '  File "dist\\${{ matrix.game }}.exe"' >> installer.nsi
+          echo 'SectionEnd' >> installer.nsi
+          makensis installer.nsi
 
       - name: 📄 Upload Windows Installer
         if: matrix.os == 'windows-latest'

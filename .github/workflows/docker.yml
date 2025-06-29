@@ -189,7 +189,7 @@ jobs:
 
   build-tetris-macos-intel:
     name: 🍎 Build tetris on macOS (Intel)
-    runs-on: [self-hosted, macos, intel]
+    runs-on: [self-hosted, macos, X64]
     steps:
       - uses: actions/checkout@v4
 
@@ -255,7 +255,7 @@ jobs:
 
   build-snake-macos-intel:
     name: 🍎 Build snake on macOS (Intel)
-    runs-on: [self-hosted, macos, intel]
+    runs-on: [self-hosted, macos, X64]
     steps:
       - uses: actions/checkout@v4
 
@@ -321,7 +321,7 @@ jobs:
 
   build-brick-breaker-macos-intel:
     name: 🍎 Build brick breaker on macOS (Intel)
-    runs-on: [self-hosted, macos, intel]
+    runs-on: [self-hosted, macos, X64]
     steps:
       - uses: actions/checkout@v4
 

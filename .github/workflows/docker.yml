@@ -62,18 +62,18 @@ jobs:
           cd games/${{ matrix.game }}
           SEP=":"
           if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
-          pyinstaller --noconfirm --onedir --windowed \
+          pyinstaller --noconfirm --onefile --windowed \
             --add-data "assets${SEP}assets" \
             --name ${{ matrix.game }} main.py
             
-            # Working -
-            # - name: 🐳 Build Docker Image
-            #   run: |
-            #     docker build \
-            #       -t $IMAGE_NAME:ci \
-            #       -f docker/Dockerfile \
-            #       --build-arg GAME_NAME=${{ matrix.game }} \
-            #       docker/
+      # Working -
+      # - name: 🐳 Build Docker Image
+      #   run: |
+      #     docker build \
+      #       -t $IMAGE_NAME:ci \
+      #       -f docker/Dockerfile \
+      #       --build-arg GAME_NAME=${{ matrix.game }} \
+      #       docker/
 
       # Working -
       # - name: 🚀 Run Headless Test
@@ -155,19 +155,10 @@ jobs:
           cd games/${{ matrix.game }}
           SEP=":"
           if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
-          pyinstaller --noconfirm --onedir --windowed \
+          pyinstaller --noconfirm --onefile --windowed \
             --add-data "assets${SEP}assets" \
             --name ${{ matrix.game }} main.py
             
-            # Working -
-            # - name: 🐳 Build Docker Image
-            #   run: |
-            #     docker build \
-            #       -t $IMAGE_NAME:ci \
-            #       -f docker/Dockerfile \
-            #       --build-arg GAME_NAME=${{ matrix.game }} \
-            #       docker/
-
       # Testing for cross-platform artifact deploys
       - name: 📤 Upload Game Artifact
         uses: actions/upload-artifact@v4
@@ -209,18 +200,9 @@ jobs:
           cd games/${{ matrix.game }}
           SEP=":"
           if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
-          pyinstaller --noconfirm --onedir --windowed \
+          pyinstaller --noconfirm --onefile --windowed \
             --add-data "assets${SEP}assets" \
             --name ${{ matrix.game }} main.py
-            
-            # Working -
-            # - name: 🐳 Build Docker Image
-            #   run: |
-            #     docker build \
-            #       -t $IMAGE_NAME:ci \
-            #       -f docker/Dockerfile \
-            #       --build-arg GAME_NAME=${{ matrix.game }} \
-            #       docker/
 
       # Testing for cross-platform artifact deploys
       - name: 📤 Upload Game Artifact

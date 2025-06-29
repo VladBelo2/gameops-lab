@@ -40,7 +40,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/tetris AppDir/usr/bin/
           chmod +x AppDir/usr/bin/tetris
-          cp ../../assets/default-icon.png AppDir/app.png
+          cp "$GITHUB_WORKSPACE/assets/default-icon.png" AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/tetris.desktop
           echo "Name=Tetris" >> AppDir/tetris.desktop
@@ -85,7 +85,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/snake AppDir/usr/bin/
           chmod +x AppDir/usr/bin/snake
-          cp ../../assets/default-icon.png AppDir/app.png
+          cp "$GITHUB_WORKSPACE/assets/default-icon.png" AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/snake.desktop
           echo "Name=Snake" >> AppDir/snake.desktop
@@ -130,7 +130,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/brick_breaker AppDir/usr/bin/
           chmod +x AppDir/usr/bin/brick_breaker
-          cp ../../assets/default-icon.png AppDir/app.png
+          cp "$GITHUB_WORKSPACE/assets/default-icon.png" AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/brick_breaker.desktop
           echo "Name=Brick Breaker" >> AppDir/brick_breaker.desktop
@@ -157,19 +157,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 📦 Install py2app
+      - name: 🍏 Build .app with py2app in virtualenv
         run: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install setuptools
-            python3 -m pip install py2app pygame
+            cd games/brick_breaker
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install py2app pygame
+            python3 setup.py py2app
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/tetris/setup.py
 
-      - name: 🍏 Build .app with py2app
-        run: |
-          cd games/tetris
-          python3 setup.py py2app
+    #   - name: 🍏 Build .app with py2app
+    #     run: |
+    #       cd games/tetris
+    #       python3 setup.py py2app
 
       - name: 📄 Upload macOS Artifact
         uses: actions/upload-artifact@v4
@@ -183,19 +186,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 📦 Install py2app
+      - name: 🍏 Build .app with py2app in virtualenv
         run: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install setuptools
-            python3 -m pip install py2app pygame
+            cd games/brick_breaker
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install py2app pygame
+            python3 setup.py py2app
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/snake/setup.py
 
-      - name: 🍏 Build .app with py2app
-        run: |
-          cd games/snake
-          python3 setup.py py2app
+    #   - name: 🍏 Build .app with py2app
+    #     run: |
+    #       cd games/snake
+    #       python3 setup.py py2app
 
       - name: 📄 Upload macOS Artifact
         uses: actions/upload-artifact@v4
@@ -209,19 +215,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 📦 Install py2app
+      - name: 🍏 Build .app with py2app in virtualenv
         run: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install setuptools
-            python3 -m pip install py2app pygame
+            cd games/brick_breaker
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install py2app pygame
+            python3 setup.py py2app
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/brick_breaker/setup.py
 
-      - name: 🍏 Build .app with py2app
-        run: |
-          cd games/brick_breaker
-          python3 setup.py py2app
+    #   - name: 🍏 Build .app with py2app
+    #     run: |
+    #       cd games/brick_breaker
+    #       python3 setup.py py2app
 
       - name: 📄 Upload macOS Artifact
         uses: actions/upload-artifact@v4

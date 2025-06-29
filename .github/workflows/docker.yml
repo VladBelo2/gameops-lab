@@ -163,11 +163,13 @@ jobs:
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/tetris
-            sips -s format icns assets/default-icon.png --out assets/icon.icns
             python3 -m venv .venv
             source .venv/bin/activate
             pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame --break-system-packages
+            pip install setuptools py2app pygame pillow --break-system-packages
+
+            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+
             python3 setup.py py2app
 
       - name: 🔍 Debug .app contents
@@ -197,11 +199,13 @@ jobs:
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/snake
-            sips -s format icns assets/default-icon.png --out assets/icon.icns
             python3 -m venv .venv
             source .venv/bin/activate
             pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame --break-system-packages
+            pip install setuptools py2app pygame pillow --break-system-packages
+
+            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+
             python3 setup.py py2app
 
       - name: 🔍 Debug .app contents
@@ -231,11 +235,13 @@ jobs:
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/brick_breaker
-            sips -s format icns assets/default-icon.png --out assets/icon.icns
             python3 -m venv .venv
             source .venv/bin/activate
             pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame --break-system-packages
+            pip install setuptools py2app pygame pillow --break-system-packages
+
+            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+            
             python3 setup.py py2app
 
       - name: 🔍 Debug .app contents

@@ -1,9 +1,12 @@
 from setuptools import setup
+import os
+
+print("🧪 [DEBUG] Running setup for Tetris...")
 
 APP = ['main.py']
 OPTIONS = {
     'argv_emulation': True,
-    'iconfile': 'assets/icon.icns',
+    'iconfile': os.path.join('assets', 'icon.icns'),
     'packages': ['pygame'],
     'plist': {
         'CFBundleName': 'Tetris',

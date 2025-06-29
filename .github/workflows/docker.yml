@@ -175,7 +175,7 @@ jobs:
       - name: 🔍 Debug .app contents
         run: |
             ls -R games/tetris/dist/tetris.app
-            
+
     #   - name: 🍏 Build .app with py2app
     #     run: |
     #       cd games/tetris

@@ -157,6 +157,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_template.py games/tetris/setup.py
+
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/brick_breaker
@@ -165,9 +168,6 @@ jobs:
             pip install --upgrade pip
             pip install py2app pygame
             python3 setup.py py2app
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_template.py games/tetris/setup.py
 
     #   - name: 🍏 Build .app with py2app
     #     run: |
@@ -186,6 +186,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_template.py games/tetris/setup.py
+        
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/brick_breaker
@@ -194,9 +197,6 @@ jobs:
             pip install --upgrade pip
             pip install py2app pygame
             python3 setup.py py2app
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_template.py games/snake/setup.py
 
     #   - name: 🍏 Build .app with py2app
     #     run: |
@@ -215,6 +215,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_template.py games/tetris/setup.py
+        
       - name: 🍏 Build .app with py2app in virtualenv
         run: |
             cd games/brick_breaker
@@ -223,9 +226,6 @@ jobs:
             pip install --upgrade pip
             pip install py2app pygame
             python3 setup.py py2app
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_template.py games/brick_breaker/setup.py
 
     #   - name: 🍏 Build .app with py2app
     #     run: |

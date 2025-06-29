@@ -40,7 +40,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/tetris AppDir/usr/bin/
           chmod +x AppDir/usr/bin/tetris
-          cp assets/default-icon.png AppDir/app.png
+          cp ../../assets/default-icon.png AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/tetris.desktop
           echo "Name=Tetris" >> AppDir/tetris.desktop
@@ -85,7 +85,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/snake AppDir/usr/bin/
           chmod +x AppDir/usr/bin/snake
-          cp assets/default-icon.png AppDir/app.png
+          cp ../../assets/default-icon.png AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/snake.desktop
           echo "Name=Snake" >> AppDir/snake.desktop
@@ -130,7 +130,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp dist/brick_breaker AppDir/usr/bin/
           chmod +x AppDir/usr/bin/brick_breaker
-          cp assets/default-icon.png AppDir/app.png
+          cp ../../assets/default-icon.png AppDir/app.png
 
           echo "[Desktop Entry]" > AppDir/brick_breaker.desktop
           echo "Name=Brick Breaker" >> AppDir/brick_breaker.desktop
@@ -159,9 +159,9 @@ jobs:
 
       - name: 📦 Install py2app
         run: |
-            pip install --upgrade pip
-            pip install setuptools
-            pip install py2app pygame
+            python3 -m pip install --upgrade pip
+            python3 -m pip install setuptools
+            python3 -m pip install py2app pygame
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/tetris/setup.py
@@ -185,9 +185,9 @@ jobs:
 
       - name: 📦 Install py2app
         run: |
-            pip install --upgrade pip
-            pip install setuptools
-            pip install py2app pygame
+            python3 -m pip install --upgrade pip
+            python3 -m pip install setuptools
+            python3 -m pip install py2app pygame
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/snake/setup.py
@@ -211,9 +211,9 @@ jobs:
 
       - name: 📦 Install py2app
         run: |
-            pip install --upgrade pip
-            pip install setuptools
-            pip install py2app pygame
+            python3 -m pip install --upgrade pip
+            python3 -m pip install setuptools
+            python3 -m pip install py2app pygame
 
       - name: 📥 Copy setup.py
         run: cp scripts/py2app_setup_template.py games/brick_breaker/setup.py

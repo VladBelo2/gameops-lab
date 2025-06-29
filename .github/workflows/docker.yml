@@ -99,11 +99,24 @@ jobs:
         run: |
           cd games/${{ matrix.game }}
           mkdir -p AppDir/usr/bin
-          ls -la dist/
+
+          # Copy binary
           cp dist/${{ matrix.game }} AppDir/usr/bin/
           chmod +x AppDir/usr/bin/${{ matrix.game }}
-          ls -la AppDir/usr/bin
+
+          # Generate .desktop file using printf (cleaner and no heredoc issues)
+          printf "[Desktop Entry]\nName=%s\nExec=%s\nIcon=%s\nType=Application\nCategories=Game\n" \
+            "${{ matrix.game }}" "${{ matrix.game }}" "${{ matrix.game }}" \
+            > AppDir/${{ matrix.game }}.desktop
+
+          # Optionally copy icon
+          if [ -f assets/icon.png ]; then
+            cp assets/icon.png AppDir/${{ matrix.game }}.png
+          fi
+
+          # Build AppImage
           appimagetool AppDir ../${{ matrix.game }}.AppImage
+
           
       # Testing for cross-platform artifact deploys
       - name: 📄 Upload AppImage Artifact

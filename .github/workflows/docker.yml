@@ -246,7 +246,7 @@ jobs:
 
       - name: 🔍 Debug .app contents
         run: |
-            ls -R games/brick_breaker/dist/brick_breaker.app
+            ls -R games/brick_breaker/dist/*.app
 
     #   - name: 🍏 Build .app with py2app
     #     run: |

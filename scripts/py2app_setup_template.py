@@ -2,9 +2,11 @@ from setuptools import setup
 
 APP = ['main.py']
 DATA_FILES = [('assets', ['assets/DejaVuSans.ttf'])]
+
 OPTIONS = {
     'argv_emulation': True,
-    'packages': ['pygame']
+    'packages': ['pygame'],
+    'excludes': ['PySide2', 'gi', 'Gst', 'GstBase', 'GstInsertBin', 'GstBadAudio'],
 }
 
 setup(

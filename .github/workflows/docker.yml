@@ -35,7 +35,7 @@ jobs:
       IMAGE_NAME: vladbelo2/${{ matrix.game }}
 
     steps:
-      - name: 🧾 Checkout code
+      - name: 📓 Checkout code
         uses: actions/checkout@v4
 
       # Testing for cross-platform artifact deploys
@@ -47,6 +47,7 @@ jobs:
       # Testing for cross-platform artifact deploys
       - name: 📦 Install Dependencies
         run: |
+          sudo apt update && sudo apt install -y appimagetool fuse
           pip install --upgrade pip
           pip install pyinstaller pygame
           
@@ -56,14 +57,11 @@ jobs:
       #     cp -r games/${{ matrix.game }} docker/${{ matrix.game }}
 
       # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build Game Binary
-        shell: bash  # Forces consistent shell on all OSs
+      - name: 🛠️ Build Binary with PyInstaller
         run: |
           cd games/${{ matrix.game }}
-          SEP=":"
-          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
           pyinstaller --noconfirm --onefile --windowed \
-            --add-data "assets${SEP}assets" \
+            --add-data "assets:assets" \
             --name ${{ matrix.game }} main.py
             
       # Working -
@@ -90,11 +88,20 @@ jobs:
       #     docker rm "$CID"
 
       # Testing for cross-platform artifact deploys
-      - name: 📤 Upload Game Artifact
+      - name: 🤖 Package as AppImage
+        run: |
+          cd games/${{ matrix.game }}
+          mkdir -p AppDir/usr/bin
+          cp dist/${{ matrix.game }} AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/${{ matrix.game }}
+          (cd AppDir && appimagetool AppDir ../${{ matrix.game }}.AppImage)
+          
+      # Testing for cross-platform artifact deploys
+      - name: 📄 Upload AppImage Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.game }}-linux-binary
-          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
+          name: ${{ matrix.game }}-linux-AppImage
+          path: games/${{ matrix.game }}/${{ matrix.game }}.AppImage
 
       # Working -
       # - name: 💾 Upload binary artifact
@@ -133,7 +140,7 @@ jobs:
       IMAGE_NAME: vladbelo2/${{ matrix.game }}
 
     steps:
-      - name: 🧾 Checkout code
+      - name: 📓 Checkout code
         uses: actions/checkout@v4
 
       # Testing for cross-platform artifact deploys
@@ -146,25 +153,30 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install pyinstaller pygame
+          pip install py2app pygame
 
       # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build Game Binary
-        shell: bash  # Forces consistent shell on all OSs
+      - name: 🛠️ Build macOS .app
         run: |
           cd games/${{ matrix.game }}
-          SEP=":"
-          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
-          pyinstaller --noconfirm --onefile --windowed \
-            --add-data "assets${SEP}assets" \
-            --name ${{ matrix.game }} main.py
-            
-      # Testing for cross-platform artifact deploys
-      - name: 📤 Upload Game Artifact
+          echo "from setuptools import setup" > setup.py
+          echo "" >> setup.py
+          echo "APP = ['main.py']" >> setup.py
+          echo "DATA_FILES = [('assets', ['assets/DejaVuSans.ttf'])]" >> setup.py
+          echo "OPTIONS = {'argv_emulation': True, 'packages': ['pygame']}" >> setup.py
+          echo "" >> setup.py
+          echo "setup(" >> setup.py
+          echo "    app=APP," >> setup.py
+          echo "    data_files=DATA_FILES," >> setup.py
+          echo "    options={'py2app': OPTIONS}," >> setup.py
+          echo ")" >> setup.py
+          python3 setup.py py2app
+
+      - name: 📄 Upload macOS .app Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.game }}-macos-binary
-          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
+          name: ${{ matrix.game }}-macOS-app
+          path: games/${{ matrix.game }}/dist/${{ matrix.game }}.app
 
   # Testing for cross-platform artifact deploys
   build-windows:
@@ -178,7 +190,7 @@ jobs:
       IMAGE_NAME: vladbelo2/${{ matrix.game }}
 
     steps:
-      - name: 🧾 Checkout code
+      - name: 📓 Checkout code
         uses: actions/checkout@v4
 
       # Testing for cross-platform artifact deploys
@@ -194,19 +206,36 @@ jobs:
           pip install pyinstaller pygame
 
       # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build Game Binary
-        shell: bash  # Forces consistent shell on all OSs
+      - name: 🛠️ Build Windows .exe
+        shell: bash
         run: |
           cd games/${{ matrix.game }}
-          SEP=":"
-          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
           pyinstaller --noconfirm --onefile --windowed \
-            --add-data "assets${SEP}assets" \
+            --add-data "assets;assets" \
             --name ${{ matrix.game }} main.py
 
       # Testing for cross-platform artifact deploys
-      - name: 📤 Upload Game Artifact
+      - name: 🛠 Generate NSIS Installer Script
+        shell: bash
+        run: |
+          mkdir -p games/${{ matrix.game }}
+          echo "Outfile \"${{ matrix.game }}-setup.exe\"" > games/${{ matrix.game }}/installer.nsi
+          echo "InstallDir \"\$PROGRAMFILES\\${{ matrix.game }}\"" >> games/${{ matrix.game }}/installer.nsi
+          echo "Page Directory" >> games/${{ matrix.game }}/installer.nsi
+          echo "Page InstFiles" >> games/${{ matrix.game }}/installer.nsi
+          echo "Section" >> games/${{ matrix.game }}/installer.nsi
+          echo "  SetOutPath \"\$INSTDIR\"" >> games/${{ matrix.game }}/installer.nsi
+          echo "  File \"dist\\${{ matrix.game }}.exe\"" >> games/${{ matrix.game }}/installer.nsi
+          echo "SectionEnd" >> games/${{ matrix.game }}/installer.nsi
+
+      - name: 🛠️ Build NSIS Installer
+        run: |
+          choco install nsis -y
+          cd games/${{ matrix.game }}
+          makensis installer.nsi
+
+      - name: 📄 Upload Windows Installer Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.game }}-windows-binary
-          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
+          name: ${{ matrix.game }}-windows-installer
+          path: games/${{ matrix.game }}/${{ matrix.game }}-setup.exe

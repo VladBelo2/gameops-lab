@@ -5,12 +5,23 @@ on:
     branches: [main]
   pull_request:
 
+# Working -
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         game: [tetris, snake, brick_breaker]
+
+# Testing for cross-platform artifact deploys
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        game: [tetris, snake, brick_breaker]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        game: [tetris, brick_breaker, snake]
+    name: Build ${{ matrix.game }} on ${{ matrix.os }}
 
     env:
       IMAGE_NAME: vladbelo2/${{ matrix.game }}
@@ -19,48 +30,82 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🧹 Prepare Docker build context
-        run: |
-          cp -r games/${{ matrix.game }} docker/${{ matrix.game }}
+      # Testing for cross-platform artifact deploys
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-      - name: 🐳 Build Docker Image
+      # Testing for cross-platform artifact deploys
+      - name: 📦 Install Dependencies
         run: |
-          docker build \
-            -t $IMAGE_NAME:ci \
-            -f docker/Dockerfile \
-            --build-arg GAME_NAME=${{ matrix.game }} \
-            docker/
+          pip install --upgrade pip
+          pip install pyinstaller pygame
+          
+      # Working -
+      # - name: 🧹 Prepare Docker build context
+      #   run: |
+      #     cp -r games/${{ matrix.game }} docker/${{ matrix.game }}
 
-      - name: 🚀 Run Headless Test
+      # Testing for cross-platform artifact deploys
+      - name: 🛠️ Build Game Binary
         run: |
-          docker run --rm \
-            -e HEADLESS_TEST=1 \
-            $IMAGE_NAME:ci
+          cd games/${{ matrix.game }}
+          pyinstaller --noconfirm --onedir --windowed \
+            --add-data "assets${{ runner.os == 'Windows' && ';' || ':' }}assets" \
+            --name ${{ matrix.game }} main.py
 
-      - name: 📦 Extract dist folder
-        run: |
-          CID=$(docker create $IMAGE_NAME:ci)
-          docker cp "$CID:/app/dist/${{ matrix.game }}" "./${{ matrix.game }}-dist"
-          docker rm "$CID"
+      # Working -
+      # - name: 🐳 Build Docker Image
+      #   run: |
+      #     docker build \
+      #       -t $IMAGE_NAME:ci \
+      #       -f docker/Dockerfile \
+      #       --build-arg GAME_NAME=${{ matrix.game }} \
+      #       docker/
 
-      - name: 💾 Upload binary artifact
+      # Working -
+      # - name: 🚀 Run Headless Test
+      #   run: |
+      #     docker run --rm \
+      #       -e HEADLESS_TEST=1 \
+      #       $IMAGE_NAME:ci
+
+      # Working -
+      # - name: 📦 Extract dist folder
+      #   run: |
+      #     CID=$(docker create $IMAGE_NAME:ci)
+      #     docker cp "$CID:/app/dist/${{ matrix.game }}" "./${{ matrix.game }}-dist"
+      #     docker rm "$CID"
+
+      # Testing for cross-platform artifact deploys
+      - name: 📤 Upload Game Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.game }}-binary
-          path: ${{ matrix.game }}-dist/
+          name: ${{ matrix.game }}-${{ matrix.os }}-binary
+          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
 
-      - name: 🔐 Login to Docker Hub
-        env:
-          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
-        run: echo "$TOKEN" | docker login -u "$USERNAME" --password-stdin
+      # Working -
+      # - name: 💾 Upload binary artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ matrix.game }}-binary
+      #     path: ${{ matrix.game }}-dist/
+
+      # Working -
+      # - name: 🔐 Login to Docker Hub
+      #   env:
+      #     USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      #   if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
+      #   run: echo "$TOKEN" | docker login -u "$USERNAME" --password-stdin
         
-      - name: ☁️ Push to Docker Hub
-        env:
-          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
-        run: |
-          docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:latest
+      # Working -
+      # - name: ☁️ Push to Docker Hub
+      #   env:
+      #     USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      #   if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
+      #   run: |
+      #     docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
+      #     docker push $IMAGE_NAME:latest

@@ -3,7 +3,7 @@ import sys
 import pygame
 
 # Paths
-BASE_PATH = getattr(__import__('sys'), '_MEIPASS', os.path.dirname(__file__))
+BASE_PATH = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(__file__)
 ASSETS_PATH = os.path.join(BASE_PATH, "assets")
 SOUNDS_PATH = os.path.join(ASSETS_PATH, "sounds")
 FONTS_PATH = os.path.join(ASSETS_PATH, "DejaVuSans.ttf")

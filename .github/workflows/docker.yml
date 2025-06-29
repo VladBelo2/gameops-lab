@@ -1,264 +1,128 @@
-name: 🐳 Docker CI for GameOps Lab
+name: 🛠️ GameOps Lab - Cross Platform Builds
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
-# Working -
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         game: [tetris, snake, brick_breaker]
-
-# Testing for cross-platform artifact deploys
-# jobs:
-#   build:
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         game: [tetris, brick_breaker, snake]
-#     name: Build ${{ matrix.game }} on ${{ matrix.os }}
-
-# Testing for cross-platform artifact deploys
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    name: 🔧 Build ${{ matrix.game }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        game: [tetris, snake, brick_breaker]
-      
-    env:
-      IMAGE_NAME: vladbelo2/${{ matrix.game }}
+        include:
+          - os: ubuntu-latest
+            game: tetris
+          - os: ubuntu-latest
+            game: snake
+          - os: ubuntu-latest
+            game: brick_breaker
+          - os: macos-latest
+            game: tetris
+          - os: macos-latest
+            game: snake
+          - os: macos-latest
+            game: brick_breaker
+          - os: windows-latest
+            game: tetris
+          - os: windows-latest
+            game: snake
+          - os: windows-latest
+            game: brick_breaker
 
     steps:
-      - name: 📓 Checkout code
+      - name: 📂 Checkout Code
         uses: actions/checkout@v4
 
-      # Testing for cross-platform artifact deploys
-      - name: 🐍 Set up Python
+      - name: 🐢 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
-      # Testing for cross-platform artifact deploys
-      - name: 📦 Install Dependencies
+      - name: 📚 Install Dependencies
         run: |
-          sudo apt update && sudo apt install -y fuse libfuse2
-          if ! command -v appimagetool &> /dev/null; then
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-            chmod +x appimagetool
-            sudo mv appimagetool /usr/local/bin/appimagetool
-          fi
-
           pip install --upgrade pip
           pip install pyinstaller pygame
-          
-      # Working -
-      # - name: 🧹 Prepare Docker build context
-      #   run: |
-      #     cp -r games/${{ matrix.game }} docker/${{ matrix.game }}
 
-      # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build Binary with PyInstaller
+      - name: 💡 Build Binary
         run: |
           cd games/${{ matrix.game }}
           pyinstaller --noconfirm --onefile --windowed \
             --add-data "assets:assets" \
             --name ${{ matrix.game }} main.py
-            
-      # Working -
-      # - name: 🐳 Build Docker Image
-      #   run: |
-      #     docker build \
-      #       -t $IMAGE_NAME:ci \
-      #       -f docker/Dockerfile \
-      #       --build-arg GAME_NAME=${{ matrix.game }} \
-      #       docker/
 
-      # Working -
-      # - name: 🚀 Run Headless Test
-      #   run: |
-      #     docker run --rm \
-      #       -e HEADLESS_TEST=1 \
-      #       $IMAGE_NAME:ci
-
-      # Working -
-      # - name: 📦 Extract dist folder
-      #   run: |
-      #     CID=$(docker create $IMAGE_NAME:ci)
-      #     docker cp "$CID:/app/dist/${{ matrix.game }}" "./${{ matrix.game }}-dist"
-      #     docker rm "$CID"
-
-      # Testing for cross-platform artifact deploys
-      - name: 🤖 Package as AppImage
+      - name: 🪐 Package as AppImage (Linux only)
+        if: matrix.os == 'ubuntu-latest'
         run: |
+          sudo apt-get update
+          sudo apt-get install -y appimagetool
           cd games/${{ matrix.game }}
           mkdir -p AppDir/usr/bin
-
-          # Copy binary
           cp dist/${{ matrix.game }} AppDir/usr/bin/
           chmod +x AppDir/usr/bin/${{ matrix.game }}
 
-          # Generate .desktop file using printf (cleaner and no heredoc issues)
+          # Desktop entry
           printf "[Desktop Entry]\nName=%s\nExec=%s\nIcon=%s\nType=Application\nCategories=Game\n" \
             "${{ matrix.game }}" "${{ matrix.game }}" "${{ matrix.game }}" \
             > AppDir/${{ matrix.game }}.desktop
 
-          # Optionally copy icon
-          if [ -f assets/icon.png ]; then
+          # Icon fallback (use generic one if missing)
+          if [ ! -f assets/icon.png ]; then
+            echo "🔹 No icon.png found, using default fallback."
+            mkdir -p AppDir
+            cp ../../assets/default-icon.png AppDir/${{ matrix.game }}.png
+          else
             cp assets/icon.png AppDir/${{ matrix.game }}.png
           fi
 
-          # Build AppImage
           appimagetool AppDir ../${{ matrix.game }}.AppImage
 
-          
-      # Testing for cross-platform artifact deploys
       - name: 📄 Upload AppImage Artifact
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.game }}-linux-AppImage
           path: games/${{ matrix.game }}/${{ matrix.game }}.AppImage
 
-      # Working -
-      # - name: 💾 Upload binary artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ matrix.game }}-binary
-      #     path: ${{ matrix.game }}-dist/
-
-      # Working -
-      # - name: 🔐 Login to Docker Hub
-      #   env:
-      #     USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      #   if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
-      #   run: echo "$TOKEN" | docker login -u "$USERNAME" --password-stdin
-        
-      # Working -
-      # - name: ☁️ Push to Docker Hub
-      #   env:
-      #     USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      #   if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
-      #   run: |
-      #     docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
-      #     docker push $IMAGE_NAME:latest
-
-# Testing for cross-platform artifact deploys
-  build-macos:
-    needs: build-linux
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        game: [tetris, snake, brick_breaker]
-      
-    env:
-      IMAGE_NAME: vladbelo2/${{ matrix.game }}
-
-    steps:
-      - name: 📓 Checkout code
-        uses: actions/checkout@v4
-
-      # Testing for cross-platform artifact deploys
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      # Testing for cross-platform artifact deploys
-      - name: 📦 Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install py2app pygame
-
-      # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build macOS .app
-        run: |
-          cd games/${{ matrix.game }}
-          echo "from setuptools import setup" > setup.py
-          echo "" >> setup.py
-          echo "APP = ['main.py']" >> setup.py
-          echo "DATA_FILES = [('assets', ['assets/DejaVuSans.ttf'])]" >> setup.py
-          echo "OPTIONS = {'argv_emulation': True, 'packages': ['pygame']}" >> setup.py
-          echo "" >> setup.py
-          echo "setup(" >> setup.py
-          echo "    app=APP," >> setup.py
-          echo "    data_files=DATA_FILES," >> setup.py
-          echo "    options={'py2app': OPTIONS}," >> setup.py
-          echo ")" >> setup.py
-          python3 setup.py py2app
-
       - name: 📄 Upload macOS .app Artifact
+        if: matrix.os == 'macos-latest'
+        run: |
+            cd games/${{ matrix.game }}
+            cat <<EOF > setup.py
+            from setuptools import setup
+            APP = ['main.py']
+            DATA_FILES = [('assets', ['assets/DejaVuSans.ttf'])]
+            OPTIONS = {'argv_emulation': True, 'packages': ['pygame']}
+            setup(app=APP, data_files=DATA_FILES, options={'py2app': OPTIONS})
+            EOF
+
+            python3 setup.py py2app
+
+      - name: 📄 Upload macOS Artifact
+        if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.game }}-macOS-app
           path: games/${{ matrix.game }}/dist/${{ matrix.game }}.app
 
-  # Testing for cross-platform artifact deploys
-  build-windows:
-    needs: build-macos
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        game: [tetris, snake, brick_breaker]
-      
-    env:
-      IMAGE_NAME: vladbelo2/${{ matrix.game }}
-
-    steps:
-      - name: 📓 Checkout code
-        uses: actions/checkout@v4
-
-      # Testing for cross-platform artifact deploys
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      # Testing for cross-platform artifact deploys
-      - name: 📦 Install Dependencies
+      - name: 🚀 Build Windows Installer
+        if: matrix.os == 'windows-latest'
         run: |
-          pip install --upgrade pip
-          pip install pyinstaller pygame
+            echo "Outfile \"${{ matrix.game }}-setup.exe\"" > installer.nsi
+            echo "InstallDir \"$PROGRAMFILES\\${{ matrix.game }}\"" >> installer.nsi
+            echo "Page Directory" >> installer.nsi
+            echo "Page InstFiles" >> installer.nsi
+            echo "Section" >> installer.nsi
+            echo "  SetOutPath \"$INSTDIR\"" >> installer.nsi
+            echo "  File \"dist\\${{ matrix.game }}.exe\"" >> installer.nsi
+            echo "SectionEnd" >> installer.nsi
+            makensis installer.nsi
 
-      # Testing for cross-platform artifact deploys
-      - name: 🛠️ Build Windows .exe
-        shell: bash
-        run: |
-          cd games/${{ matrix.game }}
-          pyinstaller --noconfirm --onefile --windowed \
-            --add-data "assets;assets" \
-            --name ${{ matrix.game }} main.py
-
-      # Testing for cross-platform artifact deploys
-      - name: 🛠 Generate NSIS Installer Script
-        shell: bash
-        run: |
-          mkdir -p games/${{ matrix.game }}
-          echo "Outfile \"${{ matrix.game }}-setup.exe\"" > games/${{ matrix.game }}/installer.nsi
-          echo "InstallDir \"\$PROGRAMFILES\\${{ matrix.game }}\"" >> games/${{ matrix.game }}/installer.nsi
-          echo "Page Directory" >> games/${{ matrix.game }}/installer.nsi
-          echo "Page InstFiles" >> games/${{ matrix.game }}/installer.nsi
-          echo "Section" >> games/${{ matrix.game }}/installer.nsi
-          echo "  SetOutPath \"\$INSTDIR\"" >> games/${{ matrix.game }}/installer.nsi
-          echo "  File \"dist\\${{ matrix.game }}.exe\"" >> games/${{ matrix.game }}/installer.nsi
-          echo "SectionEnd" >> games/${{ matrix.game }}/installer.nsi
-
-      - name: 🛠️ Build NSIS Installer
-        run: |
-          choco install nsis -y
-          cd games/${{ matrix.game }}
-          makensis installer.nsi
-
-      - name: 📄 Upload Windows Installer Artifact
+      - name: 📄 Upload Windows Installer
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.game }}-windows-installer

@@ -50,11 +50,17 @@ jobs:
           path: ${{ matrix.game }}-dist/
 
       - name: 🔐 Login to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
+        run: echo "$TOKEN" | docker login -u "$USERNAME" --password-stdin
+        
       - name: ☁️ Push to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.USERNAME != '' && env.TOKEN != '' }}
         run: |
           docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
           docker push $IMAGE_NAME:latest

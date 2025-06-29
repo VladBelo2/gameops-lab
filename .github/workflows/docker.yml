@@ -49,13 +49,13 @@ jobs:
           echo "Type=Application" >> AppDir/tetris.desktop
           echo "Categories=Game;" >> AppDir/tetris.desktop
 
-          appimagetool AppDir ../tetris.AppImage
+          games/tetris/../tetris.AppImage  → games/tetris.AppImage
 
       - name: 📄 Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tetris-linux-AppImage
-          path: games/tetris/tetris.AppImage
+          path: games/tetris.AppImage
 
   build-snake-linux:
     name: 🐧 Build snake on Ubuntu
@@ -94,13 +94,13 @@ jobs:
           echo "Type=Application" >> AppDir/snake.desktop
           echo "Categories=Game;" >> AppDir/snake.desktop
 
-          appimagetool AppDir ../snake.AppImage
+          games/snake/../snake.AppImage  → games/snake.AppImage
 
       - name: 📄 Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: snake-linux-AppImage
-          path: games/snake/snake.AppImage
+          path: games/snake.AppImage
 
   build-brick-breaker-linux:
     name: 🐧 Build brick_breaker on Ubuntu
@@ -139,13 +139,13 @@ jobs:
           echo "Type=Application" >> AppDir/brick_breaker.desktop
           echo "Categories=Game;" >> AppDir/brick_breaker.desktop
 
-          appimagetool AppDir ../brick_breaker.AppImage
+          games/brick_breaker/../brick_breaker.AppImage  → games/brick_breaker.AppImage
 
       - name: 📄 Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: brick_breaker-linux-AppImage
-          path: games/brick_breaker/brick_breaker.AppImage
+          path: games/brick_breaker.AppImage
 
           # ─────────────────────────────────────────────
 # 🍎 macOS .app Builds (using py2app)
@@ -178,7 +178,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tetris-macOS-app
-          path: games/tetris/dist/tetris.app
+          path: games/tetris/dist/**
 
   build-snake-macos:
     name: 🍎 Build snake on macOS
@@ -207,7 +207,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: snake-macOS-app
-          path: games/snake/dist/snake.app
+          path: games/snake/dist/**
 
   build-brick-breaker-macos:
     name: 🍎 Build brick_breaker on macOS
@@ -236,7 +236,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: brick_breaker-macOS-app
-          path: games/brick_breaker/dist/brick_breaker.app
+          path: games/brick_breaker/dist/**
 
 # ─────────────────────────────────────────────
 # 🪟 Windows .exe Builds (PyInstaller + NSIS)

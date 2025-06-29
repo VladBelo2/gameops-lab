@@ -47,7 +47,13 @@ jobs:
       # Testing for cross-platform artifact deploys
       - name: 📦 Install Dependencies
         run: |
-          sudo apt update && sudo apt install -y appimagetool fuse
+          sudo apt update && sudo apt install -y fuse libfuse2
+          if ! command -v appimagetool &> /dev/null; then
+            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+            chmod +x appimagetool
+            sudo mv appimagetool /usr/local/bin/appimagetool
+          fi
+
           pip install --upgrade pip
           pip install pyinstaller pygame
           

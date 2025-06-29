@@ -152,7 +152,7 @@ jobs:
 # ─────────────────────────────────────────────
 
   build-tetris-macos-arm64:
-    name: 🍎 Build tetris on macOS
+    name: 🍎 Build tetris on macOS (Apple Silicon)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -218,7 +218,7 @@ jobs:
           path: games/tetris/dist/*.app
 
   build-snake-macos-arm64:
-    name: 🍎 Build snake on macOS
+    name: 🍎 Build snake on macOS (Apple Silicon)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -284,7 +284,7 @@ jobs:
           path: games/snake/dist/*.app
 
   build-brick-breaker-macos-arm64:
-    name: 🍎 Build brick_breaker on macOS
+    name: 🍎 Build brick_breaker on macOS (Apple Silicon)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

@@ -57,8 +57,16 @@ jobs:
       - name: 🪐 Package as AppImage (Linux only)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y appimagetool
+          sudo apt update && sudo apt install -y fuse libfuse2
+          if ! command -v appimagetool &> /dev/null; then
+            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+            chmod +x appimagetool
+            sudo mv appimagetool /usr/local/bin/appimagetool
+          fi
+
+          pip install --upgrade pip
+          pip install pyinstaller pygame
+          
           cd games/${{ matrix.game }}
           mkdir -p AppDir/usr/bin
           cp dist/${{ matrix.game }} AppDir/usr/bin/

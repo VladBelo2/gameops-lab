@@ -151,7 +151,7 @@ jobs:
 # 🍎 macOS .app Builds (using py2app)
 # ─────────────────────────────────────────────
 
-  build-tetris-macos:
+  build-tetris-macos-arm64:
     name: 🍎 Build tetris on macOS
     runs-on: macos-latest
     steps:
@@ -187,7 +187,37 @@ jobs:
           name: tetris-macOS-app
           path: games/tetris/dist/*.app
 
-  build-snake-macos:
+  build-tetris-macos-intel:
+    name: 🍎 Build tetris on macOS (Intel)
+    runs-on: [self-hosted, macos, intel]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_tetris.py games/tetris/setup.py
+
+      - name: 🍏 Build .app with py2app in virtualenv
+        run: |
+          cd games/tetris
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools py2app pygame pillow
+
+          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+          python3 setup.py py2app
+
+      - name: 🔍 Debug .app contents
+        run: |
+          ls -R games/tetris/dist/tetris.app
+
+      - name: 📄 Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tetris-macOS-intel-app
+          path: games/tetris/dist/*.app
+
+  build-snake-macos-arm64:
     name: 🍎 Build snake on macOS
     runs-on: macos-latest
     steps:
@@ -223,7 +253,37 @@ jobs:
           name: snake-macOS-app
           path: games/snake/dist/*.app
 
-  build-brick-breaker-macos:
+  build-snake-macos-intel:
+    name: 🍎 Build snake on macOS (Intel)
+    runs-on: [self-hosted, macos, intel]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_snake.py games/snake/setup.py
+
+      - name: 🍏 Build .app with py2app in virtualenv
+        run: |
+          cd games/snake
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools py2app pygame pillow
+
+          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+          python3 setup.py py2app
+
+      - name: 🔍 Debug .app contents
+        run: |
+          ls -R games/snake/dist/snake.app
+
+      - name: 📄 Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snake-macOS-intel-app
+          path: games/snake/dist/*.app
+
+  build-brick-breaker-macos-arm64:
     name: 🍎 Build brick_breaker on macOS
     runs-on: macos-latest
     steps:
@@ -257,6 +317,36 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: brick_breaker-macOS-app
+          path: games/brick_breaker/dist/*.app
+
+  build-brick-breaker-macos-intel:
+    name: 🍎 Build brick breaker on macOS (Intel)
+    runs-on: [self-hosted, macos, intel]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📥 Copy setup.py
+        run: cp scripts/py2app_setup_brick_breaker.py games/snbrick_breakerake/setup.py
+
+      - name: 🍏 Build .app with py2app in virtualenv
+        run: |
+          cd games/brick_breaker
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools py2app pygame pillow
+
+          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
+          python3 setup.py py2app
+
+      - name: 🔍 Debug .app contents
+        run: |
+          ls -R games/brick_breaker/dist/*.app
+
+      - name: 📄 Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: brick_breaker-macOS-intel-app
           path: games/brick_breaker/dist/*.app
 
 # ─────────────────────────────────────────────

@@ -7,7 +7,7 @@ import pygame
 # BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
 # Detect PyInstaller environment
 if getattr(sys, 'frozen', False):
-    BASE_PATH = os.path.join(sys._MEIPASS, "_internal")
+    BASE_PATH = sys._MEIPASS
 else:
     BASE_PATH = os.path.dirname(__file__)
 ASSETS_PATH = os.path.join(BASE_PATH, "assets")

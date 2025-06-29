@@ -24,7 +24,13 @@ FPS = 60
 FALL_SPEED = 30
 
 # Paths
-BASE_PATH = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(__file__)
+# BASE_PATH = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(__file__)
+# BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
+if getattr(sys, 'frozen', False):
+    BASE_PATH = os.path.join(sys._MEIPASS, "_internal")
+else:
+    BASE_PATH = os.path.dirname(__file__)
 ASSETS_PATH = os.path.join(BASE_PATH, "assets")
+# ASSETS_PATH = os.path.join(BASE_PATH, "_internal", "assets")
 SOUNDS_PATH = os.path.join(ASSETS_PATH, "sounds")
 FONT_PATH = os.path.join(ASSETS_PATH, "DejaVuSans.ttf")

@@ -14,15 +14,23 @@ on:
 #         game: [tetris, snake, brick_breaker]
 
 # Testing for cross-platform artifact deploys
+# jobs:
+#   build:
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         os: [ubuntu-latest, macos-latest, windows-latest]
+#         game: [tetris, brick_breaker, snake]
+#     name: Build ${{ matrix.game }} on ${{ matrix.os }}
+
+# Testing for cross-platform artifact deploys
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        game: [tetris, brick_breaker, snake]
-    name: Build ${{ matrix.game }} on ${{ matrix.os }}
-
+        game: [tetris, snake, brick_breaker]
+      
     env:
       IMAGE_NAME: vladbelo2/${{ matrix.game }}
 
@@ -49,20 +57,23 @@ jobs:
 
       # Testing for cross-platform artifact deploys
       - name: 🛠️ Build Game Binary
+        shell: bash  # Forces consistent shell on all OSs
         run: |
           cd games/${{ matrix.game }}
+          SEP=":"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
           pyinstaller --noconfirm --onedir --windowed \
-            --add-data "assets${{ runner.os == 'Windows' && ';' || ':' }}assets" \
+            --add-data "assets${SEP}assets" \
             --name ${{ matrix.game }} main.py
-
-      # Working -
-      # - name: 🐳 Build Docker Image
-      #   run: |
-      #     docker build \
-      #       -t $IMAGE_NAME:ci \
-      #       -f docker/Dockerfile \
-      #       --build-arg GAME_NAME=${{ matrix.game }} \
-      #       docker/
+            
+            # Working -
+            # - name: 🐳 Build Docker Image
+            #   run: |
+            #     docker build \
+            #       -t $IMAGE_NAME:ci \
+            #       -f docker/Dockerfile \
+            #       --build-arg GAME_NAME=${{ matrix.game }} \
+            #       docker/
 
       # Working -
       # - name: 🚀 Run Headless Test
@@ -82,7 +93,7 @@ jobs:
       - name: 📤 Upload Game Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.game }}-${{ matrix.os }}-binary
+          name: ${{ matrix.game }}-linux-binary
           path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
 
       # Working -
@@ -109,3 +120,111 @@ jobs:
       #   run: |
       #     docker tag $IMAGE_NAME:ci $IMAGE_NAME:latest
       #     docker push $IMAGE_NAME:latest
+
+# Testing for cross-platform artifact deploys
+  build-macos:
+    needs: build-linux
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
+      
+    env:
+      IMAGE_NAME: vladbelo2/${{ matrix.game }}
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      # Testing for cross-platform artifact deploys
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Testing for cross-platform artifact deploys
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyinstaller pygame
+
+      # Testing for cross-platform artifact deploys
+      - name: 🛠️ Build Game Binary
+        shell: bash  # Forces consistent shell on all OSs
+        run: |
+          cd games/${{ matrix.game }}
+          SEP=":"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
+          pyinstaller --noconfirm --onedir --windowed \
+            --add-data "assets${SEP}assets" \
+            --name ${{ matrix.game }} main.py
+            
+            # Working -
+            # - name: 🐳 Build Docker Image
+            #   run: |
+            #     docker build \
+            #       -t $IMAGE_NAME:ci \
+            #       -f docker/Dockerfile \
+            #       --build-arg GAME_NAME=${{ matrix.game }} \
+            #       docker/
+
+      # Testing for cross-platform artifact deploys
+      - name: 📤 Upload Game Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.game }}-macos-binary
+          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/
+
+  # Testing for cross-platform artifact deploys
+  build-windows:
+    needs: build-macos
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
+      
+    env:
+      IMAGE_NAME: vladbelo2/${{ matrix.game }}
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      # Testing for cross-platform artifact deploys
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Testing for cross-platform artifact deploys
+      - name: 📦 Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyinstaller pygame
+
+      # Testing for cross-platform artifact deploys
+      - name: 🛠️ Build Game Binary
+        shell: bash  # Forces consistent shell on all OSs
+        run: |
+          cd games/${{ matrix.game }}
+          SEP=":"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then SEP=";"; fi
+          pyinstaller --noconfirm --onedir --windowed \
+            --add-data "assets${SEP}assets" \
+            --name ${{ matrix.game }} main.py
+            
+            # Working -
+            # - name: 🐳 Build Docker Image
+            #   run: |
+            #     docker build \
+            #       -t $IMAGE_NAME:ci \
+            #       -f docker/Dockerfile \
+            #       --build-arg GAME_NAME=${{ matrix.game }} \
+            #       docker/
+
+      # Testing for cross-platform artifact deploys
+      - name: 📤 Upload Game Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.game }}-windows-binary
+          path: games/${{ matrix.game }}/dist/${{ matrix.game }}/

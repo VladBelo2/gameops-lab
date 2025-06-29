@@ -28,6 +28,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         game: [tetris, snake, brick_breaker]
       
@@ -98,9 +99,11 @@ jobs:
         run: |
           cd games/${{ matrix.game }}
           mkdir -p AppDir/usr/bin
+          ls -la dist/
           cp dist/${{ matrix.game }} AppDir/usr/bin/
           chmod +x AppDir/usr/bin/${{ matrix.game }}
-          (cd AppDir && appimagetool AppDir ../${{ matrix.game }}.AppImage)
+          ls -la AppDir/usr/bin
+          appimagetool AppDir ../${{ matrix.game }}.AppImage
           
       # Testing for cross-platform artifact deploys
       - name: 📄 Upload AppImage Artifact
@@ -139,6 +142,7 @@ jobs:
     needs: build-linux
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         game: [tetris, snake, brick_breaker]
       
@@ -189,6 +193,7 @@ jobs:
     needs: build-macos
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         game: [tetris, snake, brick_breaker]
       

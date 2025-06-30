@@ -5,17 +5,22 @@ print("🧪 [DEBUG] Running setup for Tetris...")
 
 APP = ['main.py']
 OPTIONS = {
-    'argv_emulation': False,
-    'iconfile': os.path.join('assets', 'icon.icns'),
-    'packages': ['pygame'],
-    'plist': {
-        'CFBundleName': 'Tetris',
-        'CFBundleIdentifier': 'com.gameopslab.tetris',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
-        'CFBundleExecutable': 'tetris',
-    }
+    "argv_emulation": True,
+    "packages": ["pygame"],
+    "includes": [],
+    "excludes": [],
+    "resources": [],
+    "frameworks": [],
+    "iconfile": "assets/icon.icns",
+    "plist": {
+        "CFBundleName": "Tetris",
+        "CFBundleShortVersionString": "1.0",
+        "CFBundleIdentifier": "com.example.tetris",
+    },
+    "includes": ["pygame"],
+    "include_patterns": ["libSDL2*"],
 }
+
 
 setup(
     app=APP,

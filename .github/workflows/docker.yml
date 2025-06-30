@@ -9,7 +9,7 @@ on:
 jobs:
 
   build-linux:
-    uses: vladbelo2/gameops-lab/.github/workflows/build_game/linux-build.yml@main
+    uses: vladbelo2/gameops-lab/.github/workflows/linux-build.yml@main
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
@@ -18,7 +18,7 @@ jobs:
     secrets: inherit
 
   build-windows:
-    uses: vladbelo2/gameops-lab/.github/workflows/build_game/windows-build.yml@main
+    uses: vladbelo2/gameops-lab/.github/workflows/windows-build.yml@main
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
@@ -27,7 +27,7 @@ jobs:
     secrets: inherit
 
   build-macos-intel:
-    uses: vladbelo2/gameops-lab/.github/workflows/build_game/macos-build.yml@main
+    uses: vladbelo2/gameops-lab/.github/workflows/macos-build.yml@main
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
@@ -37,7 +37,7 @@ jobs:
     secrets: inherit
 
   build-macos-arm64:
-    uses: vladbelo2/gameops-lab/.github/workflows/build_game/macos-build.yml@main
+    uses: vladbelo2/gameops-lab/.github/workflows/macos-build.yml@main
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]

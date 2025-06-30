@@ -5,7 +5,7 @@ print("🧪 [DEBUG] Running setup for Brick Breaker...")
 
 APP = ['main.py']
 OPTIONS = {
-    "argv_emulation": True,
+    "argv_emulation": False,
     "packages": ["pygame"],
     "includes": ["pygame"],
     "iconfile": "assets/icon.icns",

@@ -1,4 +1,4 @@
-name: Build Game for macOS (Universal)
+name: Build Game for macOS
 
 on:
   workflow_call:
@@ -8,7 +8,7 @@ on:
         type: string
       arch:
         required: true
-        type: string # "intel" or "arm64"
+        type: string
 
 jobs:
   build:
@@ -37,11 +37,8 @@ jobs:
           cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
 
       - name: 🧱 Build .app
-        env:
-          GAME_NAME: ${{ inputs.game_name }}
-          ARCH: ${{ inputs.arch }}
         run: |
-          cd games/$GAME_NAME
-          python3 -m venv .venv-macos-$ARCH
-          source .venv-macos-$ARCH/bin/activate
+          cd games/${{ inputs.game_name }}
+          python3 -m venv .venv-macos-${{ inputs.arch }}
+          source .venv-macos-${{ inputs.arch }}/bin/activate
           python3 setup.py py2app

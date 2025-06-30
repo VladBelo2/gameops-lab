@@ -9,39 +9,51 @@ on:
 jobs:
 
   build-linux:
-    uses: vladbelo2/gameops-lab/.github/workflows/linux-build.yml@main
+    name: 🐧 Build on Linux
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    with:
-      game_name: ${{ matrix.game }}
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-game/linux
+        with:
+          game_name: ${{ matrix.game }}
 
   build-windows:
-    uses: vladbelo2/gameops-lab/.github/workflows/windows-build.yml@main
+    name: 🪟 Build on Windows
+    runs-on: windows-latest
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    with:
-      game_name: ${{ matrix.game }}
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-game/windows
+        with:
+          game_name: ${{ matrix.game }}
 
   build-macos-intel:
-    uses: vladbelo2/gameops-lab/.github/workflows/macos-build.yml@main
+    name: 🍎 Build on macOS Intel
+    runs-on: macos-13
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    with:
-      game_name: ${{ matrix.game }}
-      arch: "intel"
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-game/macos
+        with:
+          game_name: ${{ matrix.game }}
+          arch: "intel"
 
   build-macos-arm64:
-    uses: vladbelo2/gameops-lab/.github/workflows/macos-build.yml@main
+    name: 🍏 Build on macOS ARM64
+    runs-on: macos-14
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    with:
-      game_name: ${{ matrix.game }}
-      arch: "arm64"
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-game/macos
+        with:
+          game_name: ${{ matrix.game }}
+          arch: "arm64"

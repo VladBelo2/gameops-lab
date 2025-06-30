@@ -205,7 +205,7 @@ jobs:
           pip install setuptools py2app pygame pillow
 
           python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app
+          python3 setup.py py2app --no-argv-emulation
 
       - name: 🔍 Debug .app contents
         run: |
@@ -271,7 +271,7 @@ jobs:
           pip install setuptools py2app pygame pillow
 
           python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app
+          python3 setup.py py2app --no-argv-emulation
 
       - name: 🔍 Debug .app contents
         run: |
@@ -337,7 +337,7 @@ jobs:
           pip install setuptools py2app pygame pillow
 
           python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app
+          python3 setup.py py2app --no-argv-emulation
 
       - name: 🔍 Debug .app contents
         run: |

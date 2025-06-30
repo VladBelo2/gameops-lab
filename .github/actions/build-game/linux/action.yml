@@ -1,0 +1,31 @@
+name: Build Game for Linux
+
+on:
+  workflow_call:
+    inputs:
+      game_name:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 🧪 Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y fuse libfuse2
+          pip install --upgrade pip
+          pip install pyinstaller pygame pillow
+
+      - name: 🧱 Build
+        run: |
+          cd games/${{ inputs.game_name }}
+          python3 -m venv .venv-linux
+          source .venv-linux/bin/activate
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name ${{ inputs.game_name }} main.py

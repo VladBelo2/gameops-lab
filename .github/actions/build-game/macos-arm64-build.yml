@@ -1,0 +1,40 @@
+name: Build Game for macOS ARM64
+description: Build macOS .app using py2app with SDL2 support (ARM64)
+
+inputs:
+  game_name:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.10
+
+    - name: 📚 Install py2app and deps
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install py2app pygame pillow
+
+    - name: 🎯 Fetch latest SDL2
+      shell: bash
+      run: |
+        SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
+        SDL2_LATEST=$(curl -s "$SDL2_RELEASES_API" | jq -r '.[].tag_name' | grep -E '^release-2\.' | sort -Vr | head -n 1)
+        SDL2_VERSION="${SDL2_LATEST#release-}"
+        SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
+        SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
+        curl -LO "$SDL2_URL"
+        unzip -q "$SDL2_ZIP" -d sdl2
+        mkdir -p .dylibs
+        cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
+
+    - name: 🧱 Build .app
+      shell: bash
+      run: |
+        cd games/${{ inputs.game_name }}
+        python3 -m venv .venv-macos-arm64
+        source .venv-macos-arm64/bin/activate
+        python3 setup.py py2app

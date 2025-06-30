@@ -21,6 +21,7 @@ Each game is written in Python with `pygame`, built with `pyinstaller` or `py2ap
 
 ## 📁 Project Structure
 
+```text
 games/
 ├── tetris/
 ├── brick_breaker/
@@ -34,6 +35,7 @@ docker/
 scripts/
 ├── build_local_venv.sh
 └── build_all.sh
+```
 
 ---
 

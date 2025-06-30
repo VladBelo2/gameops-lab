@@ -1,0 +1,44 @@
+name: Build Game for macOS (Universal)
+
+on:
+  workflow_call:
+    inputs:
+      game_name:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string # "intel" or "arm64"
+
+jobs:
+  build:
+    runs-on: ${{ inputs.arch == 'arm64' && 'macos-14' || 'macos-13' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+
+      - name: 📚 Install py2app and deps
+        run: |
+          pip install --upgrade pip
+          pip install py2app pygame pillow
+
+      - name: 🎯 Fetch latest SDL2
+        run: |
+          SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
+          SDL2_LATEST=$(curl -s "$SDL2_RELEASES_API" | jq -r '.[].tag_name' | grep -E '^release-2\.' | sort -Vr | head -n 1)
+          SDL2_VERSION="${SDL2_LATEST#release-}"
+          SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
+          SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
+          curl -LO "$SDL2_URL"
+          unzip -q "$SDL2_ZIP" -d sdl2
+          mkdir -p .dylibs
+          cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
+
+      - name: 🧱 Build .app
+        run: |
+          cd games/${{ inputs.game_name }}
+          python3 -m venv .venv-macos-${{ inputs.arch }}
+          source .venv-macos-${{ inputs.arch }}/bin/activate
+          python3 setup.py py2app

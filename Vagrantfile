@@ -8,5 +8,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "shell", path: "provision.sh"
-  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+  # config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox", rsync__exclude: [".venv/"]
 end

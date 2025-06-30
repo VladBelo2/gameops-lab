@@ -1,9 +1,23 @@
-# Ignore dev artifacts from being copied to Docker context
-build/
-dist/
+# Ignore virtual environments
 .venv/
-.pytest_cache/
+.venv-*/
+
+# Python cache
 __pycache__/
 *.py[cod]
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.spec
 *.log
+
+# CI-only
+*.zip
+*.dmg
+*.exe
+*.AppImage
+
+# Action runner binaries
 action-runner

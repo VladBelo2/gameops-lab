@@ -1,16 +1,26 @@
 from setuptools import setup
+import os
+
+print("🧪 [DEBUG] Running setup for Snake...")
 
 APP = ['main.py']
-DATA_FILES = ['assets']
+SDL_DYLIB = os.path.join(".dylibs", "libSDL2-2.0.0.dylib")
+
 OPTIONS = {
-    'argv_emulation': True,
-    'packages': ['pygame'],
-    'iconfile': 'assets/default-icon.icns'  # optional
+    "argv_emulation": False,
+    "packages": ["pygame"],
+    "includes": ["pygame"],
+    "iconfile": "assets/icon.icns",
+    "resources": [SDL_DYLIB],  # ⬅️ Bundle SDL2 dylib
+    "plist": {
+        "CFBundleName": "Snake",
+        "CFBundleShortVersionString": "1.0",
+        "CFBundleIdentifier": "com.example.snake",
+    },
 }
 
 setup(
     app=APP,
-    data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
 )

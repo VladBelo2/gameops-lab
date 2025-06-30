@@ -1,35 +1,30 @@
-# OS
+# OS-specific
 .DS_Store
 Thumbs.db
-action-runner
 
 # Python + Pygame
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 .env
-*.py[cod]
-.venv
-*.egg-info/
-
-# Vagrant
-.vagrant/
-*.box
 .venv/
+.venv-*/
+*.egg-info/
 .pytest_cache/
 .cache/
 
 # Logs
 *.log
-structure_and_contents.txt
-selective_exporter.py
 
 # Secrets
 *.pem
 *.key
 secrets/*
 
+# Vagrant
+.vagrant/
+*.box
 
 # PyInstaller build artifacts
 build/
@@ -42,13 +37,12 @@ dist/
 *.exe
 *.AppImage
 
-# Game-specific
-games/brick_breaker/build/
-games/brick_breaker/dist/
-games/brick_breaker/.venv/
-games/snake/build/
-games/snake/dist/
-games/snake/.venv/
-games/tetris/build/
-games/tetris/dist/
-games/tetris/.venv/
+# Game-specific venvs (host/macOS)
+games/*/.venv-*/
+
+# Action runners
+action-runner
+
+# Legacy files
+structure_and_contents.txt
+selective_exporter.py

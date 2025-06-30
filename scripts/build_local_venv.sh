@@ -1,52 +1,62 @@
 #!/usr/bin/env bash
 set -e
 
-GAME_NAME="$1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GAME_DIR="$SCRIPT_DIR/../games/$GAME_NAME"
-cd "$GAME_DIR"
+ROOT_DIR="$SCRIPT_DIR/.."
+cd "$ROOT_DIR"
 
-CONFIG_FILE="build_config.json"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "[ERROR] ❌ Missing $CONFIG_FILE in $GAME_DIR"
-  exit 1
+GAME_NAME="$1"
+
+# Handle 'all' or empty input → build all games
+if [[ -z "$GAME_NAME" || "$GAME_NAME" == "all" ]]; then
+  echo "[INFO] 🚀 Building all games..."
+  GAMES=($(jq -r '.games[]' games.json))
+  for GAME in "${GAMES[@]}"; do
+    echo "────────────────────────────────────────"
+    echo "[INFO] 🎮 Building $GAME..."
+    bash "$SCRIPT_DIR/build_local_venv.sh" "$GAME" || echo "[WARN] ⚠️ Skipped $GAME due to errors"
+  done
+  echo "────────────────────────────────────────"
+  echo "[SUCCESS] ✅ All builds attempted."
+  exit 0
 fi
 
-GLOBAL_VENV="$2"
+# Single game logic
+GAME_DIR="$ROOT_DIR/games/$GAME_NAME"
+CONFIG_FILE="$GAME_DIR/build_config.json"
+
+if [[ ! -d "$GAME_DIR" ]]; then
+  echo "[WARN] ⚠️ Game folder '$GAME_NAME' does not exist. Skipping..."
+  exit 0
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "[WARN] ⚠️ Missing $CONFIG_FILE for game '$GAME_NAME' Skipping..."
+  exit 0
+fi
+
+cd "$GAME_DIR"
 APP_NAME=$(jq -r '.app_name' "$CONFIG_FILE")
 ENTRY_FILE=$(jq -r '.entry_file' "$CONFIG_FILE")
 ASSETS_DIR=$(jq -r '.assets_dir // empty' "$CONFIG_FILE")
-VENV_DIR=${GLOBAL_VENV:-$(jq -r '.venv_dir' "$CONFIG_FILE")}
 WINDOWED=$(jq -r '.windowed' "$CONFIG_FILE")
 
 echo "[INFO] 🛠️ Building $APP_NAME..."
 
-# Clean .venv to avoid interpreter mismatch across platforms
-echo "[INFO] 🧹 Removing old virtual environment: $VENV_DIR"
-[[ -d "$VENV_DIR" ]] && rm -rf "$VENV_DIR" || true
-sleep 3
-# if [[ -d "$VENV_DIR" ]]; then
-#   echo "[INFO] 🧹 Removing old virtual environment: $VENV_DIR"
-#   chmod -R u+rw "$VENV_DIR" 2>/dev/null || true
-#   rm -rf "$VENV_DIR" 2>/dev/null || true
+# OS-specific venv logic
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+if [[ "$OS" == "linux" && "$USER" == "vagrant" ]]; then
+  VENV_DIR="/home/vagrant/venvs/${GAME_NAME}/.venv-${OS}"
+else
+  VENV_DIR="$GAME_DIR/.venv-${OS}"
+fi
 
-#   if [[ -d "$VENV_DIR" ]]; then
-#     echo "[WARN] ⚠️ Standard rm -rf failed. Using fallback cleanup..."
-#     find "$VENV_DIR" -type f -exec rm -f {} \; 2>/dev/null || true
-#     find "$VENV_DIR" -type d -exec chmod u+rwx {} \; 2>/dev/null || true
-#     find "$VENV_DIR" -depth -type d -exec rmdir {} \; 2>/dev/null || true
-#     rmdir "$VENV_DIR" 2>/dev/null || true
-#   fi
-
-#   if [[ -d "$VENV_DIR" ]]; then
-#     echo "[FATAL] ❌ Could not delete $VENV_DIR. Please close any open terminals or editors using it."
-#     exit 1
-#   fi
-# fi
-
-# Create new venv
-echo "[INFO] 🧪 Creating new virtual environment at $VENV_DIR..."
-/usr/bin/python3 -m venv "$VENV_DIR"
+echo "[INFO] 🧪 Using virtual environment at: $VENV_DIR"
+mkdir -p "$(dirname "$VENV_DIR")"
+if [[ ! -d "$VENV_DIR" ]]; then
+  echo "[INFO] 🧪 Creating virtualenv: $VENV_DIR"
+  python3 -m venv "$VENV_DIR"
+fi
 
 # Activate venv
 if [[ -f "$VENV_DIR/bin/activate" ]]; then
@@ -57,32 +67,22 @@ else
   exit 1
 fi
 
-# Clean old build artifacts
+# Clean build artifacts
 echo "[INFO] 🧹 Cleaning build/, dist/, __pycache__, *.spec..."
-
-# Clean build/
-[[ -d build ]] && rm -rf build || true
-
-# Clean dist/
-[[ -d dist ]] && rm -rf dist || true
-
-# Clean __pycache__ recursively
+rm -rf build dist
 find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
-
-# Delete .spec files
 find . -name '*.spec' -delete
 
-echo "[INFO] 🐍 Install Python & Dependencies"
-# Install build dependencies
+# Install Python packages
+echo "[INFO] 🐍 Installing Python packages..."
 pip install --upgrade pip
 pip install pyinstaller pygame
 
-echo "[INFO] 🐍 Build with PyInstaller"
 # Build with PyInstaller
+echo "[INFO] 🐍 Building with PyInstaller..."
 ARGS=(--noconfirm --onedir)
 [[ "$WINDOWED" == "true" ]] && ARGS+=(--windowed)
 [[ -n "$ASSETS_DIR" ]] && ARGS+=(--add-data "$ASSETS_DIR:$ASSETS_DIR")
-# [[ -n "$ASSETS_DIR" ]] && ARGS+=(--add-data "$GAME_NAME/$ASSETS_DIR:$ASSETS_DIR")
 ARGS+=(--name "$APP_NAME" "$ENTRY_FILE")
 
 pyinstaller "${ARGS[@]}" 2> >(grep -v "DEPRECATION: Running PyInstaller as root" >&2)

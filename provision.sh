@@ -65,9 +65,20 @@ echo "────────────────────────�
 echo "[STEP] 🧪 Creating Python Virtual Environment"
 echo "────────────────────────────────────────"
 
-cd /vagrant
-python${PYTHON_VERSION} -m venv .venv
-source .venv/bin/activate
+echo "[INFO] 🧪 Creating Python virtual environment with OS isolation..."
+GAME_NAME="devops-lab"  # or generic label
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+VENV_DIR="/home/vagrant/venvs/${GAME_NAME}/.venv-${OS}"
+
+mkdir -p "$(dirname "$VENV_DIR")"
+if [[ ! -d "$VENV_DIR" ]]; then
+  python${PYTHON_VERSION} -m venv "$VENV_DIR"
+fi
+source "$VENV_DIR/bin/activate"
+export PATH="$VENV_DIR/bin:$PATH"
+
+echo "[INFO] 🔄 Auto-activating venv on login..."
+grep -q "$VENV_DIR/bin/activate" /home/vagrant/.bashrc || echo "source $VENV_DIR/bin/activate" >> /home/vagrant/.bashrc
 
 echo "[INFO] 🐍 Installing Python packages in venv..."
 pip install --upgrade pip
@@ -75,14 +86,12 @@ pip install --upgrade pip
 [[ "$INSTALL_PYINSTALLER" == "true" ]] && pip install pyinstaller
 [[ "$INSTALL_PYTEST" == "true" ]] && pip install pytest
 
-echo "[INFO] 🔄 Auto-activating venv on login..."
-echo "source /vagrant/.venv/bin/activate" >> /home/vagrant/.bashrc
-
 echo "────────────────────────────────────────"
 echo "[STEP] 🛠️ Building and Testing Games"
 echo "────────────────────────────────────────"
 
-GAMES=("tetris" "brick_breaker" "snake")
+# GAMES=("tetris" "brick_breaker" "snake")
+GAMES=($(jq -r '.games[]' /vagrant/games.json))
 for GAME in "${GAMES[@]}"; do
   echo ""
   echo "🎮 [$GAME] 🔧 Building with virtualenv..."

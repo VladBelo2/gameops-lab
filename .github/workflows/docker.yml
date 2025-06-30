@@ -6,448 +6,52 @@ on:
   pull_request:
     branches: [ main ]
 
-# ─────────────────────────────────────────────
-# 🐧 Linux AppImage Builds (PyInstaller + appimagetool)
-# ─────────────────────────────────────────────
-
 jobs:
 
-  build-tetris-linux:
-    name: 🐧 Build tetris on Ubuntu
+  build-linux:
+    name: 🐧 Build on Linux
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-
-      - name: 📚 Install Dependencies
-        run: |
-          sudo apt update && sudo apt install -y fuse libfuse2
-          if ! command -v appimagetool &> /dev/null; then
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-            chmod +x appimagetool
-            sudo mv appimagetool /usr/local/bin/appimagetool
-          fi
-          pip install --upgrade pip
-          pip install pyinstaller pygame
-
-      - name: 💡 Build Binary
-        run: |
-          cd games/tetris
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name tetris main.py
-
-      - name: 🪐 Package AppImage
-        run: |
-          cd games/tetris
-          mkdir -p AppDir/usr/bin
-          cp dist/tetris AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/tetris
-          cp assets/default-icon.png AppDir/app.png
-
-          echo "[Desktop Entry]" > AppDir/tetris.desktop
-          echo "Name=Tetris" >> AppDir/tetris.desktop
-          echo "Exec=tetris" >> AppDir/tetris.desktop
-          echo "Icon=app" >> AppDir/tetris.desktop
-          echo "Type=Application" >> AppDir/tetris.desktop
-          echo "Categories=Game;" >> AppDir/tetris.desktop
-
-          appimagetool AppDir tetris.AppImage
-
-      - name: 📄 Upload Artifact
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/build-game/linux-build
         with:
-          name: tetris-linux-AppImage
-          path: games/tetris/tetris.AppImage
+          game_name: ${{ matrix.game }}
 
-  build-snake-linux:
-    name: 🐧 Build snake on Ubuntu
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📚 Install Dependencies
-        run: |
-          sudo apt update && sudo apt install -y fuse libfuse2
-          if ! command -v appimagetool &> /dev/null; then
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-            chmod +x appimagetool
-            sudo mv appimagetool /usr/local/bin/appimagetool
-          fi
-          pip install --upgrade pip
-          pip install pyinstaller pygame
-
-      - name: 💡 Build Binary
-        run: |
-          cd games/snake
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name snake main.py
-
-      - name: 🪐 Package AppImage
-        run: |
-          cd games/snake
-          mkdir -p AppDir/usr/bin
-          cp dist/snake AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/snake
-          cp assets/default-icon.png AppDir/app.png
-
-          echo "[Desktop Entry]" > AppDir/snake.desktop
-          echo "Name=Snake" >> AppDir/snake.desktop
-          echo "Exec=snake" >> AppDir/snake.desktop
-          echo "Icon=app" >> AppDir/snake.desktop
-          echo "Type=Application" >> AppDir/snake.desktop
-          echo "Categories=Game;" >> AppDir/snake.desktop
-
-          appimagetool AppDir snake.AppImage
-
-      - name: 📄 Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: snake-linux-AppImage
-          path: games/snake/snake.AppImage
-
-  build-brick-breaker-linux:
-    name: 🐧 Build brick_breaker on Ubuntu
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📚 Install Dependencies
-        run: |
-          sudo apt update && sudo apt install -y fuse libfuse2
-          if ! command -v appimagetool &> /dev/null; then
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-            chmod +x appimagetool
-            sudo mv appimagetool /usr/local/bin/appimagetool
-          fi
-          pip install --upgrade pip
-          pip install pyinstaller pygame
-
-      - name: 💡 Build Binary
-        run: |
-          cd games/brick_breaker
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name brick_breaker main.py
-
-      - name: 🪐 Package AppImage
-        run: |
-          cd games/brick_breaker
-          mkdir -p AppDir/usr/bin
-          cp dist/brick_breaker AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/brick_breaker
-          cp assets/default-icon.png AppDir/app.png
-
-          echo "[Desktop Entry]" > AppDir/brick_breaker.desktop
-          echo "Name=Brick Breaker" >> AppDir/brick_breaker.desktop
-          echo "Exec=brick_breaker" >> AppDir/brick_breaker.desktop
-          echo "Icon=app" >> AppDir/brick_breaker.desktop
-          echo "Type=Application" >> AppDir/brick_breaker.desktop
-          echo "Categories=Game;" >> AppDir/brick_breaker.desktop
-
-          appimagetool AppDir brick_breaker.AppImage
-
-      - name: 📄 Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: brick_breaker-linux-AppImage
-          path: games/brick_breaker/brick_breaker.AppImage
-
-          # ─────────────────────────────────────────────
-# 🍎 macOS .app Builds (using py2app)
-# ─────────────────────────────────────────────
-
-  build-tetris-macos-arm64:
-    name: 🍎 Build tetris on macOS (Apple Silicon)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_tetris.py games/tetris/setup.py
-
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-            cd games/tetris
-            python3 -m venv .venv
-            source .venv/bin/activate
-            pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame pillow --break-system-packages
-
-            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-
-            python3 setup.py py2app
-
-      - name: 🔍 Debug .app contents
-        run: |
-            ls -R games/tetris/dist/tetris.app
-
-    #   - name: 🍏 Build .app with py2app
-    #     run: |
-    #       cd games/tetris
-    #       python3 setup.py py2app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tetris-macOS-app
-          path: games/tetris/dist/*.app
-
-  build-tetris-macos-intel:
-    name: 🍎 Build tetris on macOS (Intel)
-    runs-on: [self-hosted, macOS, X64]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_tetris.py games/tetris/setup.py
-
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-          cd games/tetris
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
-          pip install setuptools py2app pygame pillow
-
-          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app --no-argv-emulation
-
-      - name: 🔍 Debug .app contents
-        run: |
-          ls -R games/tetris/dist/tetris.app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tetris-macOS-intel-app
-          path: games/tetris/dist/*.app
-
-  build-snake-macos-arm64:
-    name: 🍎 Build snake on macOS (Apple Silicon)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_snake.py games/snake/setup.py
-        
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-            cd games/snake
-            python3 -m venv .venv
-            source .venv/bin/activate
-            pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame pillow --break-system-packages
-
-            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-
-            python3 setup.py py2app
-
-      - name: 🔍 Debug .app contents
-        run: |
-            ls -R games/snake/dist/snake.app
-
-    #   - name: 🍏 Build .app with py2app
-    #     run: |
-    #       cd games/snake
-    #       python3 setup.py py2app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: snake-macOS-app
-          path: games/snake/dist/*.app
-
-  build-snake-macos-intel:
-    name: 🍎 Build snake on macOS (Intel)
-    runs-on: [self-hosted, macOS, X64]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_snake.py games/snake/setup.py
-
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-          cd games/snake
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
-          pip install setuptools py2app pygame pillow
-
-          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app --no-argv-emulation
-
-      - name: 🔍 Debug .app contents
-        run: |
-          ls -R games/snake/dist/snake.app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: snake-macOS-intel-app
-          path: games/snake/dist/*.app
-
-  build-brick-breaker-macos-arm64:
-    name: 🍎 Build brick_breaker on macOS (Apple Silicon)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_brick_breaker.py games/brick_breaker/setup.py
-        
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-            cd games/brick_breaker
-            python3 -m venv .venv
-            source .venv/bin/activate
-            pip install --upgrade pip --break-system-packages
-            pip install setuptools py2app pygame pillow --break-system-packages
-
-            python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-            
-            python3 setup.py py2app
-
-      - name: 🔍 Debug .app contents
-        run: |
-            ls -R games/brick_breaker/dist/*.app
-
-    #   - name: 🍏 Build .app with py2app
-    #     run: |
-    #       cd games/brick_breaker
-    #       python3 setup.py py2app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: brick_breaker-macOS-app
-          path: games/brick_breaker/dist/*.app
-
-  build-brick-breaker-macos-intel:
-    name: 🍎 Build brick breaker on macOS (Intel)
-    runs-on: [self-hosted, macOS, X64]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 📥 Copy setup.py
-        run: cp scripts/py2app_setup_brick_breaker.py games/brick_breaker/setup.py
-
-      - name: 🍏 Build .app with py2app in virtualenv
-        run: |
-          cd games/brick_breaker
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
-          pip install setuptools py2app pygame pillow
-
-          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app --no-argv-emulation
-
-      - name: 🔍 Debug .app contents
-        run: |
-          ls -R games/brick_breaker/dist/*.app
-
-      - name: 📄 Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: brick_breaker-macOS-intel-app
-          path: games/brick_breaker/dist/*.app
-
-# ─────────────────────────────────────────────
-# 🪟 Windows .exe Builds (PyInstaller + NSIS)
-# ─────────────────────────────────────────────
-
-  build-tetris-windows:
-    name: 🪟 Build tetris on Windows
+  build-windows:
+    name: 🪟 Build on Windows
     runs-on: windows-latest
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-
-      - name: 🐍 Install dependencies
-        run: pip install pyinstaller pygame
-
-      - name: 🛠️ Build executable
-        run: |
-          cd games/tetris
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name tetris main.py
-
-      - name: 🚀 Create NSIS installer
-        run: |
-          cd games/tetris
-          echo 'Outfile "tetris-setup.exe"' > installer.nsi
-          echo 'InstallDir "$PROGRAMFILES\\tetris"' >> installer.nsi
-          echo 'Page Directory' >> installer.nsi
-          echo 'Page InstFiles' >> installer.nsi
-          echo 'Section' >> installer.nsi
-          echo '  SetOutPath "$INSTDIR"' >> installer.nsi
-          echo '  File "dist\\tetris.exe"' >> installer.nsi
-          echo 'SectionEnd' >> installer.nsi
-          makensis installer.nsi
-
-      - name: 📄 Upload installer
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/build-game/windows-build
         with:
-          name: tetris-windows-installer
-          path: games/tetris/tetris-setup.exe
+          game_name: ${{ matrix.game }}
 
-  build-snake-windows:
-    name: 🪟 Build snake on Windows
-    runs-on: windows-latest
+  build-macos-intel:
+    name: 🍎 Build on macOS Intel
+    runs-on: macos-13
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-
-      - name: 🐍 Install dependencies
-        run: pip install pyinstaller pygame
-
-      - name: 🛠️ Build executable
-        run: |
-          cd games/snake
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name snake main.py
-
-      - name: 🚀 Create NSIS installer
-        run: |
-          cd games/snake
-          echo 'Outfile "snake-setup.exe"' > installer.nsi
-          echo 'InstallDir "$PROGRAMFILES\\snake"' >> installer.nsi
-          echo 'Page Directory' >> installer.nsi
-          echo 'Page InstFiles' >> installer.nsi
-          echo 'Section' >> installer.nsi
-          echo '  SetOutPath "$INSTDIR"' >> installer.nsi
-          echo '  File "dist\\snake.exe"' >> installer.nsi
-          echo 'SectionEnd' >> installer.nsi
-          makensis installer.nsi
-
-      - name: 📄 Upload installer
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/build-game/macos-intel-build
         with:
-          name: snake-windows-installer
-          path: games/snake/snake-setup.exe
+          game_name: ${{ matrix.game }}
 
-  build-brick-breaker-windows:
-    name: 🪟 Build brick_breaker on Windows
-    runs-on: windows-latest
+  build-macos-arm64:
+    name: 🍏 Build on macOS ARM64
+    runs-on: macos-14
+    strategy:
+      matrix:
+        game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-
-      - name: 🐍 Install dependencies
-        run: pip install pyinstaller pygame
-
-      - name: 🛠️ Build executable
-        run: |
-          cd games/brick_breaker
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name brick_breaker main.py
-
-      - name: 🚀 Create NSIS installer
-        run: |
-          cd games/brick_breaker
-          echo 'Outfile "brick_breaker-setup.exe"' > installer.nsi
-          echo 'InstallDir "$PROGRAMFILES\\brick_breaker"' >> installer.nsi
-          echo 'Page Directory' >> installer.nsi
-          echo 'Page InstFiles' >> installer.nsi
-          echo 'Section' >> installer.nsi
-          echo '  SetOutPath "$INSTDIR"' >> installer.nsi
-          echo '  File "dist\\brick_breaker.exe"' >> installer.nsi
-          echo 'SectionEnd' >> installer.nsi
-          makensis installer.nsi
-
-      - name: 📄 Upload installer
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/build-game/macos-arm64-build
         with:
-          name: brick_breaker-windows-installer
-          path: games/brick_breaker/brick_breaker-setup.exe
+          game_name: ${{ matrix.game }}

@@ -1,0 +1,31 @@
+name: Build Game for Windows
+description: Build Windows EXE using PyInstaller + NSIS
+
+inputs:
+  game_name:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.10
+
+    - name: 🧰 Install NSIS
+      shell: powershell
+      run: choco install nsis -y
+
+    - name: 📚 Install Python deps
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install pyinstaller pygame pillow
+
+    - name: 🧱 Build EXE
+      shell: bash
+      run: |
+        cd games/${{ inputs.game_name }}
+        python3 -m venv .venv-windows
+        source .venv-windows/Scripts/activate
+        pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name ${{ inputs.game_name }} main.py

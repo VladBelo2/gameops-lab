@@ -24,8 +24,10 @@ jobs:
           pip install pyinstaller pygame pillow
 
       - name: 🧱 Build
+        env:
+          GAME_NAME: ${{ inputs.game_name }}
         run: |
-          cd games/${{ inputs.game_name }}
+          cd games/$GAME_NAME
           python3 -m venv .venv-linux
           source .venv-linux/bin/activate
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name ${{ inputs.game_name }} main.py
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name $GAME_NAME main.py

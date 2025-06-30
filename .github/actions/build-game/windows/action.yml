@@ -27,8 +27,10 @@ jobs:
 
       - name: 🧱 Build EXE
         shell: bash
+        env:
+          GAME_NAME: ${{ inputs.game_name }}
         run: |
-          cd games/${{ inputs.game_name }}
+          cd games/$GAME_NAME
           python3 -m venv .venv-windows
           source .venv-windows/Scripts/activate
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name ${{ inputs.game_name }} main.py
+          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name $GAME_NAME main.py

@@ -9,51 +9,39 @@ on:
 jobs:
 
   build-linux:
-    name: 🐧 Build on Linux
-    runs-on: ubuntu-latest
+    uses: ./.github/actions/build-game/linux/action.yml
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/linux
-        with:
-          game_name: ${{ matrix.game }}
+    with:
+      game_name: ${{ matrix.game }}
+    secrets: inherit
 
   build-windows:
-    name: 🪟 Build on Windows
-    runs-on: windows-latest
+    uses: ./.github/actions/build-game/windows/action.yml
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/windows
-        with:
-          game_name: ${{ matrix.game }}
+    with:
+      game_name: ${{ matrix.game }}
+    secrets: inherit
 
   build-macos-intel:
-    name: 🍎 Build on macOS Intel
-    runs-on: macos-13
+    uses: ./.github/actions/build-game/macos/action.yml
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/macos
-        with:
-          game_name: ${{ matrix.game }}
-          arch: "intel"
+    with:
+      game_name: ${{ matrix.game }}
+      arch: "intel"
+    secrets: inherit
 
   build-macos-arm64:
-    name: 🍏 Build on macOS ARM64
-    runs-on: macos-14
+    uses: ./.github/actions/build-game/macos/action.yml
     strategy:
       matrix:
         game: [tetris, snake, brick_breaker]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/macos
-        with:
-          game_name: ${{ matrix.game }}
-          arch: "arm64"
+    with:
+      game_name: ${{ matrix.game }}
+      arch: "arm64"
+    secrets: inherit

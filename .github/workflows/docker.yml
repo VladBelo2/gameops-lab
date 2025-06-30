@@ -16,7 +16,7 @@ jobs:
         game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/linux-build
+      - uses: vladbelo2/gameops-lab/.github/workflows/linux-build.yml@main
         with:
           game_name: ${{ matrix.game }}
 
@@ -28,7 +28,7 @@ jobs:
         game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/windows-build
+      - uses: vladbelo2/gameops-lab/.github/workflows/windows-build.yml@main
         with:
           game_name: ${{ matrix.game }}
 
@@ -40,7 +40,7 @@ jobs:
         game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/macos-intel-build
+      - uses: vladbelo2/gameops-lab/.github/workflows/macos-intel-build.yml@main
         with:
           game_name: ${{ matrix.game }}
 
@@ -52,6 +52,6 @@ jobs:
         game: [tetris, snake, brick_breaker]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/build-game/macos-arm64-build
+      - uses: vladbelo2/gameops-lab/.github/workflows/macos-arm64-build.yml@main
         with:
           game_name: ${{ matrix.game }}

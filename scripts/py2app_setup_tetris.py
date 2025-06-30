@@ -7,18 +7,15 @@ APP = ['main.py']
 OPTIONS = {
     "argv_emulation": True,
     "packages": ["pygame"],
-    "includes": [],
-    "excludes": [],
-    "resources": [],
-    "frameworks": [],
+    "includes": ["pygame"],
     "iconfile": "assets/icon.icns",
     "plist": {
         "CFBundleName": "Tetris",
         "CFBundleShortVersionString": "1.0",
         "CFBundleIdentifier": "com.example.tetris",
     },
-    "includes": ["pygame"],
-    "include_patterns": ["libSDL2*"],
+    "resources": [],
+    "frameworks": [],  # You can try adding SDL2 here if needed
 }
 
 

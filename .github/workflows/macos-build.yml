@@ -42,11 +42,14 @@ jobs:
       #     mkdir -p .dylibs
       #     LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
       #     cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
-      
+
       - name: 🧩 Ensure jq is installed
         run: |
           if ! command -v jq &> /dev/null; then
+            echo "installing jq"
             brew install jq
+          else
+            echo "jq already installed"
           fi
           
       - name: 📦 Install SDL2 (macOS)

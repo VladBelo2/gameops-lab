@@ -19,10 +19,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 📚 Install py2app and deps
-        run: |
-          pip install --upgrade pip
-          pip install py2app pygame pillow
+      # - name: 📚 Install py2app and deps
+      #   run: |
+      #     pip install --upgrade pip
+      #     pip install py2app pygame pillow
 
       # - name: 🎯 Fetch latest SDL2
       #   run: |
@@ -49,4 +49,6 @@ jobs:
           python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
           python3 -m venv .venv-macos-${{ inputs.arch }}
           source .venv-macos-${{ inputs.arch }}/bin/activate
+          pip install --upgrade pip
+          pip install py2app pygame pillow
           python3 setup.py py2app

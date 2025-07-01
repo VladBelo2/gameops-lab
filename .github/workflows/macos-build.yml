@@ -46,9 +46,15 @@ jobs:
       - name: 🧱 Build .app
         run: |
           cd games/${{ inputs.game_name }}
-          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
           python3 -m venv .venv-macos-${{ inputs.arch }}
           source .venv-macos-${{ inputs.arch }}/bin/activate
           pip install --upgrade pip
           pip install py2app pygame pillow
+          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
           python3 setup.py py2app
+
+      - name: 📦 Upload Artifact (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.game_name }}-macos
+          path: games/${{ inputs.game_name }}/dist/${{ inputs.game_name }}

@@ -33,3 +33,8 @@ jobs:
           source .venv-windows/Scripts/activate
           pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name ${{ inputs.game_name }} main.py
 
+      - name: 📦 Upload Artifact (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.game_name }}-windows
+          path: games/${{ inputs.game_name }}/dist/${{ inputs.game_name }}.exe

@@ -29,3 +29,9 @@ jobs:
           python3 -m venv .venv-linux
           source .venv-linux/bin/activate
           pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name ${{ inputs.game_name }} main.py
+
+      - name: 📦 Upload Artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.game_name }}-linux
+          path: games/${{ inputs.game_name }}/dist/${{ inputs.game_name }}

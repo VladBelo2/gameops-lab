@@ -53,8 +53,6 @@ jobs:
       #     fi
                 
       - name: 📦 Install SDL2 (macOS)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd games/${{ inputs.game_name }}
           set -eo pipefail
@@ -64,13 +62,13 @@ jobs:
           echo "────────────────────────────────────"
 
           SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
-          AUTH_HEADER="Authorization: Bearer $GITHUB_TOKEN"
 
           echo "DEBUG: SDL2_RELEASES_API=$SDL2_RELEASES_API"
+          AUTH_HEADER="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
           echo "DEBUG: AUTH_HEADER=[REDACTED]"
 
           if ! command -v jq &>/dev/null; then
-            echo "📦 jq not found. Installing..."
+            echo "📦 Installing jq..."
             brew install jq
           else
             echo "📦 jq already installed ✅"
@@ -80,25 +78,22 @@ jobs:
           curl -s -H "$AUTH_HEADER" "$SDL2_RELEASES_API" > sdl2_releases.json
 
           echo "📄 DEBUG: First 40 lines of sdl2_releases.json"
-          head -n 40 sdl2_releases.json || echo "⚠️ Could not preview JSON"
+          head -n 40 sdl2_releases.json
 
           echo "🔍 Extracting tag name from JSON..."
-          SDL2_LATEST=$(cat sdl2_releases.json | jq -r '.[].tag_name' | grep -E '^release-2\.' | sort -Vr | head -n 1)
-          echo "DEBUG: SDL2_LATEST=$SDL2_LATEST"
+          SDL2_LATEST=$(jq -r '.[].tag_name' sdl2_releases.json | grep -E '^release-2\.' | sort -Vr | head -n 1)
 
           if [[ -z "$SDL2_LATEST" ]]; then
             echo "❌ Could not find a valid SDL2 release tag"
-            cat sdl2_releases.json
             exit 1
           fi
 
+          echo "DEBUG: SDL2_LATEST=$SDL2_LATEST"
           SDL2_VERSION="${SDL2_LATEST#release-}"
-          echo "DEBUG: SDL2_VERSION=$SDL2_VERSION"
-
           SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
-          echo "DEBUG: SDL2_ZIP=$SDL2_ZIP"
-
           SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
+          echo "DEBUG: SDL2_VERSION=$SDL2_VERSION"
+          echo "DEBUG: SDL2_ZIP=$SDL2_ZIP"
           echo "DEBUG: SDL2_URL=$SDL2_URL"
 
           echo "🌐 Downloading SDL2 from: $SDL2_URL"
@@ -107,11 +102,21 @@ jobs:
           echo "📦 Unzipping..."
           unzip -q "$SDL2_ZIP" -d sdl2
 
-          echo "🗂️ Copying libSDL2-2.0.0.dylib..."
-          mkdir -p .dylibs
-          cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
+          echo "🗂️ Preview of extracted files:"
+          find sdl2 | head -n 50
 
-          echo "✅ SDL2 dylib copied successfully"
+          echo "🧪 Checking for SDL2.framework..."
+          if [[ -f "sdl2/SDL2.framework/Versions/A/SDL2" ]]; then
+            echo "✅ Found SDL2.framework — using it."
+            mkdir -p .dylibs
+            cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
+          else
+            echo "⚠️ SDL2.framework not found in ZIP. Falling back to Homebrew..."
+            brew install sdl2
+            mkdir -p .dylibs
+            LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
+            cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
+          fi
 
       - name: 🧱 Build .app
         run: |

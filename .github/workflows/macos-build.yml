@@ -42,16 +42,30 @@ jobs:
       #     mkdir -p .dylibs
       #     LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
       #     cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
-      
+
       - name: 📦 Install SDL2 (macOS)
         run: |
           cd games/${{ inputs.game_name }}
           SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
           SDL2_LATEST=$(curl -s "$SDL2_RELEASES_API" | jq -r '.[].tag_name' | grep -E '^release-2\.' | sort -Vr | head -n 1)
+
+          if [[ -z "$SDL2_LATEST" ]]; then
+            echo "[ERROR] ❌ Could not find a valid SDL2 release tag"
+            exit 1
+          fi
+
           SDL2_VERSION="${SDL2_LATEST#release-}"
           SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
           SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
+
+          echo "[INFO] 📦 Downloading SDL2 from: $SDL2_URL"
           curl -LO "$SDL2_URL"
+
+          if [[ ! -f "$SDL2_ZIP" ]]; then
+            echo "[ERROR] ❌ Failed to download $SDL2_ZIP"
+            exit 1
+          fi
+
           unzip -q "$SDL2_ZIP" -d sdl2
           mkdir -p .dylibs
           cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib

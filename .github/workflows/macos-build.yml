@@ -116,15 +116,16 @@ jobs:
             brew install sdl2
 
             echo "📦 Locating libSDL2.dylib from Homebrew..."
-            mkdir -p .dylibs
             LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
-            echo "DEBUG: LIB_PATH=$LIB_PATH"
 
-            if [[ -z "$LIB_PATH" || ! -f "$LIB_PATH" ]]; then
-              echo "❌ Could not find libSDL2.dylib even after Homebrew install"
+            if [[ -z "$LIB_PATH" ]]; then
+              echo "❌ libSDL2.dylib not found in Homebrew locations!"
+              echo "🧪 DEBUG: Available files in /opt/homebrew/lib:"
+              ls -l /opt/homebrew/lib | grep SDL || echo "(no SDL2 files)"
               exit 1
             fi
 
+            echo "✅ Found libSDL2.dylib at: $LIB_PATH"
             cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
           fi
 

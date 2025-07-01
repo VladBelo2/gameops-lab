@@ -116,17 +116,32 @@ jobs:
             brew install sdl2
 
             echo "📦 Locating libSDL2.dylib from Homebrew..."
-            LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
 
-            if [[ -z "$LIB_PATH" ]]; then
-              echo "❌ libSDL2.dylib not found in Homebrew locations!"
-              echo "🧪 DEBUG: Available files in /opt/homebrew/lib:"
-              ls -l /opt/homebrew/lib | grep SDL || echo "(no SDL2 files)"
+            # Common Homebrew locations
+            BREW_PREFIX=$(brew --prefix sdl2 || brew --prefix)
+            SDL_CANDIDATES=(
+              "$BREW_PREFIX/lib/libSDL2.dylib"
+              "/usr/local/Cellar/sdl2"*/lib/libSDL2.dylib
+              "/opt/homebrew/Cellar/sdl2"*/lib/libSDL2.dylib
+            )
+
+            FOUND=0
+            for path in "${SDL_CANDIDATES[@]}"; do
+              if [[ -f "$path" ]]; then
+                echo "✅ Found: $path"
+                mkdir -p .dylibs
+                cp "$path" .dylibs/libSDL2-2.0.0.dylib
+                FOUND=1
+                break
+              fi
+            done
+
+            if [[ "$FOUND" -eq 0 ]]; then
+              echo "❌ Could not locate libSDL2.dylib in expected Homebrew paths"
+              echo "🧪 DEBUG: Available files in $(brew --prefix sdl2)/lib:"
+              ls -l "$(brew --prefix sdl2)/lib" || echo "(no such dir)"
               exit 1
             fi
-
-            echo "✅ Found libSDL2.dylib at: $LIB_PATH"
-            cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
           fi
 
           echo "✅ SDL2 setup complete"

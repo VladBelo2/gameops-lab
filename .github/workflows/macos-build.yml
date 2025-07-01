@@ -46,6 +46,7 @@ jobs:
       - name: 🧱 Build .app
         run: |
           cd games/${{ inputs.game_name }}
+          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
           python3 -m venv .venv-macos-${{ inputs.arch }}
           source .venv-macos-${{ inputs.arch }}/bin/activate
           python3 setup.py py2app

@@ -53,6 +53,8 @@ jobs:
       #     fi
                 
       - name: 📦 Install SDL2 (macOS)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd games/${{ inputs.game_name }}
           set -eo pipefail
@@ -60,18 +62,22 @@ jobs:
           echo "────────────────────────────────────"
           echo "🔍 Fetching latest SDL2 release..."
           echo "────────────────────────────────────"
+
           SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
+          AUTH_HEADER="Authorization: Bearer $GITHUB_TOKEN"
+
           echo "DEBUG: SDL2_RELEASES_API=$SDL2_RELEASES_API"
+          echo "DEBUG: AUTH_HEADER=[REDACTED]"
 
           if ! command -v jq &>/dev/null; then
-            echo "📦 Installing jq..."
+            echo "📦 jq not found. Installing..."
             brew install jq
           else
             echo "📦 jq already installed ✅"
           fi
 
           echo "🧪 DEBUG: Running curl to fetch JSON..."
-          curl -s "$SDL2_RELEASES_API" > sdl2_releases.json
+          curl -s -H "$AUTH_HEADER" "$SDL2_RELEASES_API" > sdl2_releases.json
 
           echo "📄 DEBUG: First 40 lines of sdl2_releases.json"
           head -n 40 sdl2_releases.json || echo "⚠️ Could not preview JSON"
@@ -82,33 +88,30 @@ jobs:
 
           if [[ -z "$SDL2_LATEST" ]]; then
             echo "❌ Could not find a valid SDL2 release tag"
-            echo "🔎 Dumping full JSON file for review:"
             cat sdl2_releases.json
             exit 1
           fi
 
           SDL2_VERSION="${SDL2_LATEST#release-}"
-          SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
-          SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
-
           echo "DEBUG: SDL2_VERSION=$SDL2_VERSION"
+
+          SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
           echo "DEBUG: SDL2_ZIP=$SDL2_ZIP"
+
+          SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
           echo "DEBUG: SDL2_URL=$SDL2_URL"
 
           echo "🌐 Downloading SDL2 from: $SDL2_URL"
           curl -LO "$SDL2_URL"
 
-          echo "📦 Unzipping $SDL2_ZIP..."
+          echo "📦 Unzipping..."
           unzip -q "$SDL2_ZIP" -d sdl2
 
-          echo "📁 Listing sdl2/ directory contents:"
-          find sdl2/
-
-          echo "📂 Creating .dylibs folder and copying SDL2 binary..."
+          echo "🗂️ Copying libSDL2-2.0.0.dylib..."
           mkdir -p .dylibs
           cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
 
-          echo "✅ SDL2 successfully set up!"
+          echo "✅ SDL2 dylib copied successfully"
 
       - name: 🧱 Build .app
         run: |

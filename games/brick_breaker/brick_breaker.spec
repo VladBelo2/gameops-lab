@@ -42,3 +42,9 @@ coll = COLLECT(
     upx_exclude=[],
     name='brick_breaker',
 )
+app = BUNDLE(
+    coll,
+    name='brick_breaker.app',
+    icon=None,
+    bundle_identifier=None,
+)

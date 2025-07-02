@@ -59,15 +59,16 @@ if [[ ! -d "$VENV_DIR" ]]; then
 fi
 
 # Activate venv
-if [[ -f "$VENV_DIR/bin/activate" ]]; then
-  if [[ "$OS" == mingw* || "$OS" == msys* || "$OS" == cygwin* ]]; then
-    source "$VENV_DIR/Scripts/activate"
-  else
-    source "$VENV_DIR/bin/activate"
-  fi
+if [[ -f "$VENV_DIR/Scripts/activate" ]]; then
+  # Windows
+  source "$VENV_DIR/Scripts/activate"
+  export PATH="$VENV_DIR/Scripts:$PATH"
+elif [[ -f "$VENV_DIR/bin/activate" ]]; then
+  # Linux/macOS
+  source "$VENV_DIR/bin/activate"
   export PATH="$VENV_DIR/bin:$PATH"
 else
-  echo "[ERROR] ❌ Failed to activate virtualenv in $VENV_DIR"
+  echo "[ERROR] ❌ Failed to find activate script in $VENV_DIR"
   exit 1
 fi
 

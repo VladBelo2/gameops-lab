@@ -68,11 +68,16 @@ Host builds only support macOS/Linux. Use the VM for reproducible builds.
 - `env.conf` — toggles for VM provisioning (Docker, PyInstaller, etc.)
 - `games.json` — list of game names used for build matrix
 - `build_config.json` (per game) — controls:
-`app_name`
-`entry_file`
-`assets_dir`
-`venv_dir`
-`windowed` build
+
+  - `app_name`
+
+  - `entry_file`
+
+  - `assets_dir`
+
+  - `venv_dir`
+
+  - `windowed` build
 
 ---
 
@@ -82,8 +87,10 @@ Host builds only support macOS/Linux. Use the VM for reproducible builds.
 - ✅ Dynamic matrix from games.json
 - 📁 Uploads .exe, .app, .AppImage as build artifacts
 - 🔧 Full VM + Docker provisioning workflows:
-`spin_vm.yml` — Provisions and copies project from GitHub
-`spin_docker.yml` — Builds dynamic container with pip/pkg options
+
+  - `spin_vm.yml` — Provisions and copies project from GitHub
+
+  - `spin_docker.yml` — Builds dynamic container with pip/pkg options
 
 ---
 

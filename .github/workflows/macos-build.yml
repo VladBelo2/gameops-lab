@@ -28,8 +28,17 @@ jobs:
           pip install pygame pytest
           pytest tests || echo "[WARN] ❌ Some tests failed"
 
-      - name: 📦 Upload Raw Game Files (macOS)
+      - name: 🔨 Build with local venv
+        run: |
+          bash scripts/build_local_venv.sh ${{ inputs.game_name }}
+
+      - name: 🐳 Build Docker Image (optional)
+        run: |
+          bash docker/build_docker_image.sh ${{ inputs.game_name }} --no-test
+
+      - name: 📦 Upload dist/ Folder (Built Game)
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game_name }}-macos-${{ inputs.arch }}
-          path: games/${{ inputs.game_name }}
+          name: ${{ inputs.game_name }}-${{ runner.os }}
+          path: games/${{ inputs.game_name }}/dist

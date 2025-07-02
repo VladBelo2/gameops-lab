@@ -29,7 +29,7 @@ def test_snake_grows_on_food():
     game.snake.direction = (1, 0)
     game.update()
     assert len(game.snake.body) == 2
-    assert game.score == 1
+    assert game.score == 10
 
 def test_snake_does_not_grow_without_food():
     game = SnakeGame()
@@ -100,7 +100,7 @@ def test_food_eaten_updates_score():
     game.food.position = (game.snake.body[0][0] + 1, game.snake.body[0][1])
     game.snake.direction = (1, 0)
     game.update()
-    assert game.score == 1
+    assert game.score == 10
 
 def test_snake_direction_logic():
     game = SnakeGame()

@@ -58,7 +58,11 @@ fi
 
 # Activate venv
 if [[ -f "$VENV_DIR/bin/activate" ]]; then
-  source "$VENV_DIR/bin/activate"
+  if [[ "$OS" == mingw* || "$OS" == msys* || "$OS" == cygwin* ]]; then
+    source "$VENV_DIR/Scripts/activate"
+  else
+    source "$VENV_DIR/bin/activate"
+  fi
   export PATH="$VENV_DIR/bin:$PATH"
 else
   echo "[ERROR] ❌ Failed to activate virtualenv in $VENV_DIR"

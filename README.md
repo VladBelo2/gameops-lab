@@ -1,21 +1,22 @@
 # 🕹️ GameOps Lab 🎲
 
-**GameOps Lab** is a cross-platform DevOps game automation lab. It features 3 classic arcade-style games — Tetris, Brick Breaker, and Snake — that are built, tested, and packaged automatically for macOS, Windows, and Linux using GitHub Actions CI/CD.
+**GameOps Lab** is a cross-platform DevOps automation project that turns classic arcade-style games into a real-world CI/CD and infrastructure playground. It includes **Tetris**, **Brick Breaker**, and **Snake**, built using Python and pygame, and packaged for **macOS**, **Windows**, and **Linux**.
 
-Each game is written in Python with `pygame`, built with `pyinstaller` or `py2app`, and Dockerized for headless verification. The project emphasizes DevOps best practices, cross-platform delivery, and reproducible builds in a fully automated environment.
+This project automates everything: building, testing, containerizing, and packaging — using GitHub Actions, Vagrant, and Docker. It’s designed to demonstrate real-world DevOps practices across platforms in a reproducible, automated, and scalable way.
 
 ---
 
 ## 📦 Features
 
-- 🎮 Three classic games: **Tetris**, **Brick Breaker**, and **Snake**
-- 🐳 Docker builds and headless tests for every game
-- 🧪 Full GitHub Actions matrix CI for macOS, Windows, and Linux
-- 🖼️ PyInstaller and py2app builds for native .exe / .app / .AppImage outputs
-- ✅ Per-game `build_config.json` and automated builders
-- 💻 Vagrant VM with auto-provisioning via `provision.sh`
-- 🧠 Game-specific testing and linting (with `pytest`)
-- 🗃️ Dynamic build matrix powered by `games.json`
+- 🎮 Three classic games: Tetris, Brick Breaker, Snake
+- 🧪 Headless Docker builds and PyInstaller packaging
+- 🐧 GitHub Actions CI/CD matrix for Linux, macOS (Intel+ARM), and Windows
+- 📦 Native `.exe`, `.app`, and `.AppImage` outputs
+- 💻 Fully automated Vagrant + provision.sh build system
+- 📁 Per-game `build_config.json` and global `games.json` for centralized control
+- ✅ Tests via `pytest` and cross-platform `.venv` handling
+- 🐍 Custom Docker and VM build runners with CLI tooling
+- 📜 Build logs, artifacts, and game packages as GitHub Action outputs
 
 ---
 
@@ -30,11 +31,9 @@ docker/
 ├── build_docker_image.sh
 ├── Makefile
 .github/
-├── workflows/
-└── actions/
+└── workflows/
 scripts/
-├── build_local_venv.sh
-└── build_all.sh
+└── build_local_venv.sh
 ```
 
 ---
@@ -66,63 +65,78 @@ Host builds only support macOS/Linux. Use the VM for reproducible builds.
 
 ## ⚙️ Configuration
 
-- env.conf — toggles (install Docker, PyInstaller, etc.)
-
-- games.json — list of games to build
-
-- build_config.json (per game) — build name, entry file, assets, flags
+- `env.conf` — toggles for VM provisioning (Docker, PyInstaller, etc.)
+- `games.json` — list of game names used for build matrix
+- `build_config.json` (per game) — controls:
+-- `app_name`
+-- `entry_file`
+-- `assets_dir`
+-- `venv_dir`
+-- `windowed` build
 
 ---
 
-## 🏗️ CI/CD Pipeline
+## 🏗️ CI/CD Pipeline (GitHub Actions)
 
-GitHub Actions auto-builds all games per platform:
+- 💡 Automatically builds every game for every OS
+- ✅ Dynamic matrix from games.json
+- 📁 Uploads .exe, .app, .AppImage as build artifacts
+- 🔧 Full VM + Docker provisioning workflows:
+-- `spin_vm.yml` — Provisions and copies project from GitHub
+-- `spin_docker.yml` — Builds dynamic container with pip/pkg options
 
-- .github/actions/build-game/ — reusable build logic per OS
+---
 
-- docker.yml — dynamic matrix using games.json
+## 🐳 DevOps-Orchestrator Integration
 
-- Uploads .exe, .app, .AppImage as artifacts
+This project is compatible with the [DevOps-Orchestrator repo](https://github.com/vladbelo2/devops-orchestrator), allowing you to:
+- 🧱 Spin VMs for any GitHub project with `vagrant up`
+- 🐳 Launch Docker containers with custom base images, packages, and ports
+- 🧠 Dynamically build or test games inside VM or container
+
+---
+
+## 🧪 Testing & Linting
+
+Each game includes:
+- ✅ `tests/` directory with PyTest-based test coverage
+- 🔀 Testable in all environments (VM, Host, Docker, CI)
+- ✅ Works even if some tests fail (`|| echo ...`)
 
 ---
 
 ## 🔐 Signing & Notarization
 
-Currently skipped. May be added later for .dmg and .exe builds using:
-
-- macOS: codesign, Apple Dev account
-
-- Windows: signtool, valid certificate
+Currently skipped in CI. Future plans include:
+- codesign and notarize for macOS
+- signtool for Windows
 
 ---
 
-## 💡 Contributions
+## 🧠 How to Add Your Own Game
 
-Want to add your own game? Just:
+1. Create a folder in `games/your_game`
+2. Add `main.py` and `assets.py` and `assets` folder
+3. Create `build_config.json`
+4. Append to `games.json`
 
-- Add a folder under games/your_game
-
-- Create a build_config.json
-
-- Add the game name to games.json
+You’ll get Docker builds, CI/CD, and native packages out of the box.
 
 ---
 
-## 🔮 Coming Next: Future Phases
+## 🔮 Roadmap: Future Phases
 
-The GameOps Lab project is actively evolving! Here are the upcoming development phases planned:
-
-Phase	Title	Description
-✅ Phase 1	🎮 Game Dev Foundation	Build 3 fully playable Python games using Pygame.
-✅ Phase 2	🐳 Docker Builds	Containerize each game and test headless builds.
-✅ Phase 3	🔁 GitHub Actions Matrix	Cross-platform builds for all games via CI/CD.
-✅ Phase 4	📦 Native Installers	Generate .exe, .app, and .AppImage binaries.
-🔜 Phase 5	☸️ Kubernetes Deployment	Deploy all games in a headless K8s lab with Ingress.
-🔜 Phase 6	📊 Monitoring with Prometheus & Grafana	Add observability: game pod crashes, restarts, metrics.
-🔜 Phase 7	🤖 Game Bots	Simulate gameplay using bots for load testing.
-🔜 Phase 8	💥 Chaos Engineering	Simulate random crashes and ensure system resilience.
-🔜 Phase 9	🚀 GitOps with ArgoCD	Declarative GitOps-based game deployment pipeline.
-🔜 Phase 10	🌐 Public Download Portal	Host binaries and allow users to download games directly.
+Phase	Title	Status
+✅	🎮 Game Dev Foundation	Complete
+✅	🐳 Docker Builds	Complete
+✅	🔁 GitHub Actions Matrix	Complete
+✅	📦 Native Installers	Complete
+🔜	☸️ Kubernetes Deployment	Planned
+🔜	📊 Monitoring (Prometheus/Grafana)	Planned
+🔜	🤖 Game Bots for Load Testing	Planned
+🔜	💥 Chaos Engineering	Planned
+🔜	🚀 GitOps with ArgoCD	Planned
+🔜	🌐 Public Download Portal	Planned
 
 ---
 
@@ -132,6 +146,7 @@ MIT License. See LICENSE.
 
 ---
 
-## 👨‍🔧 Authors
+## 🧑‍💻 Author
 
-Developed by Vlad Belo as part of the GameOps Lab portfolio project.
+Vlad Belo 
+DevOps Engineer | SRE | Automation Specialist

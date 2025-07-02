@@ -15,13 +15,6 @@ sudo apt-get upgrade -y
 sudo apt-get install -y "python${PYTHON_VERSION}" "python${PYTHON_VERSION}-venv" \
   "python${PYTHON_VERSION}-dev" python3-pip build-essential jq
 
-if [[ "$INSTALL_PYGAME_DEPS" == "true" ]]; then
-  echo "[INFO] 🎮 Installing SDL2 and GUI dependencies..."
-  sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-    libportmidi-dev libfreetype6-dev libavformat-dev libswscale-dev \
-    libjpeg-dev libpng-dev libtiff-dev libx11-dev
-fi
-
 echo "────────────────────────────────────────"
 echo "[STEP] 🐳 Installing Docker Engine"
 echo "────────────────────────────────────────"
@@ -66,7 +59,7 @@ echo "[STEP] 🧪 Creating Python Virtual Environment"
 echo "────────────────────────────────────────"
 
 echo "[INFO] 🧪 Creating Python virtual environment with OS isolation..."
-GAME_NAME="devops-lab"  # or generic label
+GAME_NAME="devops-lab"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 VENV_DIR="/home/vagrant/venvs/${GAME_NAME}/.venv-${OS}"
 
@@ -90,7 +83,6 @@ echo "────────────────────────�
 echo "[STEP] 🛠️ Building and Testing Games"
 echo "────────────────────────────────────────"
 
-# GAMES=("tetris" "brick_breaker" "snake")
 GAMES=($(jq -r '.games[]' /vagrant/games.json))
 for GAME in "${GAMES[@]}"; do
   echo ""

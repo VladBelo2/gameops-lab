@@ -16,7 +16,7 @@ elif [[ "$MODE" == "--test-only" ]]; then
   SKIP_TEST=false
 fi
 
-# If no game specified or 'all', build for all
+# Handle all or missing game
 if [[ -z "$GAME_NAME" || "$GAME_NAME" == "all" ]]; then
   echo "[INFO] 🐳 Building Docker images for all games..."
   GAMES=($(jq -r '.games[]' games.json))

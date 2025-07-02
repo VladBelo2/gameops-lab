@@ -1,0 +1,12 @@
+services:
+  gameops:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gameops-container
+    working_dir: /vagrant
+    volumes:
+      - .:/vagrant
+    tty: true
+    stdin_open: true
+    command: bash /vagrant/provision_docker.sh

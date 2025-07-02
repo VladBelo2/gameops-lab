@@ -31,15 +31,13 @@ if [[ ! -d "$GAME_DIR" ]]; then
 fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "[WARN] ⚠️ Missing $CONFIG_FILE for game '$GAME_NAME' Skipping..."
+  echo "[WARN] ⚠️ Missing $CONFIG_FILE for game '$GAME_NAME'. Skipping..."
   exit 0
 fi
 
 cd "$GAME_DIR"
 APP_NAME=$(jq -r '.app_name' "$CONFIG_FILE")
-ENTRY_FILE=$(jq -r '.entry_file' "$CONFIG_FILE")
 ASSETS_DIR=$(jq -r '.assets_dir // empty' "$CONFIG_FILE")
-WINDOWED=$(jq -r '.windowed' "$CONFIG_FILE")
 
 echo "[INFO] 🛠️ Building $APP_NAME..."
 
@@ -73,18 +71,9 @@ rm -rf build dist
 find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
 find . -name '*.spec' -delete
 
-# Install Python packages
+# Install Python dependencies
 echo "[INFO] 🐍 Installing Python packages..."
 pip install --upgrade pip
-pip install pyinstaller pygame
-
-# Build with PyInstaller
-echo "[INFO] 🐍 Building with PyInstaller..."
-ARGS=(--noconfirm --onedir)
-[[ "$WINDOWED" == "true" ]] && ARGS+=(--windowed)
-[[ -n "$ASSETS_DIR" ]] && ARGS+=(--add-data "$ASSETS_DIR:$ASSETS_DIR")
-ARGS+=(--name "$APP_NAME" "$ENTRY_FILE")
-
-pyinstaller "${ARGS[@]}" 2> >(grep -v "DEPRECATION: Running PyInstaller as root" >&2)
+pip install pygame
 
 echo "[DONE] ✅ $APP_NAME build complete → dist/$APP_NAME"

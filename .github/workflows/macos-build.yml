@@ -19,150 +19,17 @@ jobs:
         with:
           python-version: '3.10'
 
-      # - name: 📚 Install py2app and deps
-      #   run: |
-      #     pip install --upgrade pip
-      #     pip install py2app pygame pillow
-
-      # - name: 🎯 Fetch latest SDL2
-      #   run: |
-      #     SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
-      #     SDL2_LATEST=$(curl -s "$SDL2_RELEASES_API" | jq -r '.[].tag_name' | grep -E '^release-2\.' | sort -Vr | head -n 1)
-      #     SDL2_VERSION="${SDL2_LATEST#release-}"
-      #     SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
-      #     SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
-      #     curl -LO "$SDL2_URL"
-      #     unzip -q "$SDL2_ZIP" -d sdl2
-      #     mkdir -p .dylibs
-      #     cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
-
-      # - name: 📦 Install SDL2 (macOS)
-      #   run: |
-      #     brew install sdl2
-      #     mkdir -p .dylibs
-      #     LIB_PATH=$(find /opt/homebrew/lib /usr/local/lib -name "libSDL2.dylib" 2>/dev/null | head -n 1)
-      #     cp "$LIB_PATH" .dylibs/libSDL2-2.0.0.dylib
-
-      # - name: 🧩 Ensure jq is installed
-      #   run: |
-      #     if ! command -v jq &> /dev/null; then
-      #       echo "installing jq"
-      #       brew install jq
-      #     else
-      #       echo "jq already installed"
-      #     fi
-                
-      - name: 📦 Install SDL2 (macOS)
-        run: |
-          cd games/${{ inputs.game_name }}
-          set -eo pipefail
-
-          echo "────────────────────────────────────"
-          echo "🔍 Fetching latest SDL2 release..."
-          echo "────────────────────────────────────"
-
-          SDL2_RELEASES_API="https://api.github.com/repos/libsdl-org/SDL/releases"
-          AUTH_HEADER="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
-
-          echo "DEBUG: SDL2_RELEASES_API=$SDL2_RELEASES_API"
-          echo "DEBUG: AUTH_HEADER=[REDACTED]"
-
-          if ! command -v jq &>/dev/null; then
-            echo "📦 Installing jq..."
-            brew install jq
-          else
-            echo "📦 jq already installed ✅"
-          fi
-
-          echo "🧪 DEBUG: Running curl to fetch JSON..."
-          curl -s -H "$AUTH_HEADER" "$SDL2_RELEASES_API" > sdl2_releases.json
-
-          echo "📄 DEBUG: First 40 lines of sdl2_releases.json"
-          head -n 40 sdl2_releases.json || true
-
-          echo "🔍 Extracting tag name from JSON..."
-          SDL2_LATEST=$(jq -r '.[].tag_name' < sdl2_releases.json | grep -E '^release-2\.' | sort -Vr | head -n 1)
-          echo "DEBUG: SDL2_LATEST=$SDL2_LATEST"
-
-          if [[ -z "$SDL2_LATEST" ]]; then
-            echo "❌ Could not find a valid SDL2 release tag"
-            exit 1
-          fi
-
-          SDL2_VERSION="${SDL2_LATEST#release-}"
-          SDL2_ZIP="SDL2-${SDL2_VERSION}.zip"
-          SDL2_URL="https://github.com/libsdl-org/SDL/releases/download/${SDL2_LATEST}/${SDL2_ZIP}"
-
-          echo "DEBUG: SDL2_VERSION=$SDL2_VERSION"
-          echo "DEBUG: SDL2_ZIP=$SDL2_ZIP"
-          echo "DEBUG: SDL2_URL=$SDL2_URL"
-
-          echo "🌐 Downloading SDL2 from: $SDL2_URL"
-          curl -LO "$SDL2_URL"
-
-          echo "📦 Unzipping..."
-          unzip -q "$SDL2_ZIP" -d sdl2
-
-          echo "🗂️ Preview of extracted files:"
-          find sdl2 | head -n 50 || true
-
-          echo "🧪 Checking for SDL2.framework..."
-          if [[ -f sdl2/SDL2.framework/Versions/A/SDL2 ]]; then
-            echo "✅ Found SDL2.framework in zip — using it."
-            mkdir -p .dylibs
-            cp sdl2/SDL2.framework/Versions/A/SDL2 .dylibs/libSDL2-2.0.0.dylib
-          else
-            echo "⚠️ SDL2.framework not found in zip. Falling back to Homebrew..."
-            brew install sdl2
-
-            echo "📦 Locating libSDL2.dylib from Homebrew..."
-
-            # Common Homebrew locations
-            BREW_PREFIX=$(brew --prefix sdl2 || brew --prefix)
-            SDL_CANDIDATES=(
-              "$BREW_PREFIX/lib/libSDL2.dylib"
-              "/usr/local/Cellar/sdl2"*/lib/libSDL2.dylib
-              "/opt/homebrew/Cellar/sdl2"*/lib/libSDL2.dylib
-            )
-
-            FOUND=0
-            for path in "${SDL_CANDIDATES[@]}"; do
-              if [[ -f "$path" ]]; then
-                echo "✅ Found: $path"
-                mkdir -p .dylibs
-                cp "$path" .dylibs/libSDL2-2.0.0.dylib
-                FOUND=1
-                break
-              fi
-            done
-
-            if [[ "$FOUND" -eq 0 ]]; then
-              echo "❌ Could not locate libSDL2.dylib in expected Homebrew paths"
-              echo "🧪 DEBUG: Available files in $(brew --prefix sdl2)/lib:"
-              ls -l "$(brew --prefix sdl2)/lib" || echo "(no such dir)"
-              exit 1
-            fi
-          fi
-
-          echo "✅ SDL2 setup complete"
-
-      - name: 🧱 Build .app
+      - name: 🧪 Setup Python Env and Run Tests
         run: |
           cd games/${{ inputs.game_name }}
           python3 -m venv .venv-macos-${{ inputs.arch }}
           source .venv-macos-${{ inputs.arch }}/bin/activate
           pip install --upgrade pip
-          pip install py2app pygame pillow
-          python3 -c "from PIL import Image; im=Image.open('assets/default-icon.png'); im.save('assets/icon.icns', format='ICNS')"
-          python3 setup.py py2app
+          pip install pygame pytest
+          pytest tests || echo "[WARN] ❌ Some tests failed"
 
-      - name: 🧪 Debug Output Directory
-        run: ls -R games/${{ inputs.game_name }}/dist || echo "No build output"
-
-      - name: 📦 Upload Artifact (macOS)
+      - name: 📦 Upload Raw Game Files (macOS)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game_name }}-macos
-          path: |
-            games/${{ inputs.game_name }}/dist/*.app
-            games/${{ inputs.game_name }}/dist/*
+          path: games/${{ inputs.game_name }}

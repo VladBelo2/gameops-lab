@@ -42,9 +42,3 @@ coll = COLLECT(
     upx_exclude=[],
     name='snake',
 )
-app = BUNDLE(
-    coll,
-    name='snake.app',
-    icon=None,
-    bundle_identifier=None,
-)

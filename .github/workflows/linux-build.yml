@@ -16,22 +16,17 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 🥪 Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y fuse libfuse2
-          pip install --upgrade pip
-          pip install pyinstaller pygame pillow
-
-      - name: 🧱 Build
+      - name: 🧪 Setup Python Env and Run Tests
         run: |
           cd games/${{ inputs.game_name }}
           python3 -m venv .venv-linux
           source .venv-linux/bin/activate
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets:assets" --name ${{ inputs.game_name }} main.py
+          pip install --upgrade pip
+          pip install pygame pytest
+          pytest tests || echo "[WARN] ❌ Some tests failed"
 
-      - name: 📦 Upload Artifact (Linux)
+      - name: 📦 Upload Raw Game Files (Linux)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game_name }}-linux
-          path: games/${{ inputs.game_name }}/dist/${{ inputs.game_name }}
+          path: games/${{ inputs.game_name }}

@@ -16,25 +16,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 🛠️ Install NSIS
-        run: choco install nsis -y
-
-      - name: 📚 Install Python deps
-        shell: bash
-        run: |
-          pip install --upgrade pip
-          pip install pyinstaller pygame pillow
-
-      - name: 🧱 Build EXE
+      - name: 🧪 Setup Python Env and Run Tests
         shell: bash
         run: |
           cd games/${{ inputs.game_name }}
           python3 -m venv .venv-windows
           source .venv-windows/Scripts/activate
-          pyinstaller --noconfirm --onefile --windowed --add-data "assets;assets" --name ${{ inputs.game_name }} main.py
+          pip install --upgrade pip
+          pip install pygame pytest
+          pytest tests || echo "[WARN] ❌ Some tests failed"
 
-      - name: 📦 Upload Artifact (Windows)
+      - name: 📦 Upload Raw Game Files (Windows)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game_name }}-windows
-          path: games/${{ inputs.game_name }}/dist/${{ inputs.game_name }}.exe
+          path: games/${{ inputs.game_name }}

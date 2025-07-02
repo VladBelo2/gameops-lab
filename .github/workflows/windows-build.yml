@@ -22,12 +22,12 @@ jobs:
           cd games/${{ inputs.game_name }}
           python3 -m venv .venv-windows
           source .venv-windows/Scripts/activate
-          pip install --upgrade pip
-          pip install pygame pytest
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pygame pytest
           pytest tests || echo "[WARN] ❌ Some tests failed"
 
-      - name: 📦 Upload Raw Game Files (Windows)
+      - name: 📦 Upload Game Source Folder (Windows)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game_name }}-windows
-          path: games/${{ inputs.game_name }}/dist
+          name: ${{ inputs.game_name }}-source-windows
+          path: games/${{ inputs.game_name }}

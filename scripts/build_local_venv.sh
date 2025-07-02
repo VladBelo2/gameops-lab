@@ -80,8 +80,13 @@ find . -name '*.spec' -delete
 
 # Install Python packages
 echo "[INFO] 🐍 Installing Python packages..."
-pip install --upgrade pip
-pip install pyinstaller pygame
+if [[ "$OS" == "mingw"* || "$OS" == "msys"* || "$OS" == "cygwin"* ]]; then
+  PYTHON_CMD="python"
+else
+  PYTHON_CMD="python3"
+fi
+"$PYTHON_CMD" -m pip install --upgrade pip
+"$PYTHON_CMD" -m pip install pyinstaller pygame
 
 # Build with PyInstaller
 echo "[INFO] 🐍 Building with PyInstaller..."

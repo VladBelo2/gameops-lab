@@ -30,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game_name }}-windows
-          path: games/${{ inputs.game_name }}
+          path: games/${{ inputs.game_name }}/dist

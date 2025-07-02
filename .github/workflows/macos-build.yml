@@ -31,5 +31,5 @@ jobs:
       - name: 📦 Upload Raw Game Files (macOS)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game_name }}-macos
-          path: games/${{ inputs.game_name }}
+          name: ${{ inputs.game_name }}-macos-${{ inputs.arch }}
+          path: games/${{ inputs.game_name }}/dist
